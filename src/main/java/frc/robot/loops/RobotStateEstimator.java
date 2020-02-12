@@ -2,8 +2,9 @@ package frc.robot.loops;
 
 import frc.robot.Kinematics;
 import frc.robot.RobotState;
+import frc.robot.StateMachines.Shooter;
 import frc.robot.subsystems.Drive;
-
+import frc.robot.subsystems.Turret;
 import frc.lib.util.RigidTransform2d;
 import frc.lib.util.Rotation2d;
 
@@ -26,7 +27,7 @@ public class RobotStateEstimator implements Loop {
 
     RobotState robot_state_ = RobotState.getInstance();
     Drive drive_ = Drive.getInstance();
-    
+    Turret turret_ = Shooter.getInstance().getTurret();
     double left_encoder_prev_distance_ = 0;
     double right_encoder_prev_distance_ = 0;
 
@@ -42,12 +43,12 @@ public class RobotStateEstimator implements Loop {
         double left_distance = drive_.getLeftDistanceInches();
         double right_distance = drive_.getRightDistanceInches();
         Rotation2d gyro_angle = drive_.getGyroAngle();
-  
+        Rotation2d turret_angle = turret_.getAngle();
         RigidTransform2d odometry = robot_state_.generateOdometryFromSensors(
                 left_distance - left_encoder_prev_distance_, right_distance - right_encoder_prev_distance_, gyro_angle);
         RigidTransform2d.Delta velocity = Kinematics.forwardKinematics(drive_.getLeftVelocityInchesPerSec(),
                 drive_.getRightVelocityInchesPerSec());
-        robot_state_.addObservations(time, odometry, velocity);
+        robot_state_.addObservations(time, odometry, turret_angle, velocity);
         left_encoder_prev_distance_ = left_distance;
         right_encoder_prev_distance_ = right_distance;
     }

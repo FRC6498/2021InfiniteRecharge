@@ -37,8 +37,7 @@ public class Robot extends TimedRobot {
 
     AutoModeExecuter mAutoModeExecuter = null;
 
-    TalonFX intakeTest;
-    DigitalInput indexTest, feedTest;
+   
 
     // Other parts of the robot
     CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
@@ -100,10 +99,7 @@ public class Robot extends TimedRobot {
 
             // Configure loopers
 
-            intakeTest = new TalonFX(10);
-            //winchTest.configOpenloopRamp(.1);
-            indexTest = new DigitalInput(0);
-            feedTest = new DigitalInput(1);
+            
            
             mEnabledLooper.register(RobotStateEstimator.getInstance());
           
@@ -275,9 +271,7 @@ public class Robot extends TimedRobot {
             if(mControls.getHighGear()) mDrive.setHighGear(true);
             else if(mControls.getLowGear()) mDrive.setHighGear(false);
             
-            intakeTest.set(ControlMode.PercentOutput,mControls.getTestControl());
-
-            System.out.println("Feed: "+feedTest.get()+" Index: "+indexTest.get());
+           
 
             outputAllToSmartDashboard();
      
@@ -302,7 +296,7 @@ public class Robot extends TimedRobot {
   
     @Override
     public void testPeriodic() {
-        intakeTest.set(ControlMode.PercentOutput,mControls.getTestControl());
+      
     }
 
 
