@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import frc.robot.Constants;
+import frc.robot.loops.Looper;
 import frc.lib.util.Rotation2d;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -33,7 +34,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Turret extends Subsystem {
     private TalonFX falcon_;
 
-    public Turret() {
+    private static Turret instance_ = new Turret();
+
+    public static Turret getInstance() {
+        return instance_;
+    }
+
+
+    private Turret() {
         // The turret has one Talon.
         falcon_ = new TalonFX(Constants.kTurretTalonId);
         falcon_.setNeutralMode(NeutralMode.Brake);
@@ -61,30 +69,30 @@ public class Turret extends Subsystem {
         // far.
         falcon_.configForwardSoftLimitEnable(true);//.enableForwardSoftLimit(true);
         falcon_.configReverseSoftLimitEnable(true);
-        falcon_.configForwardSoftLimitThreshold((int) (Constants.kSoftMaxTurretAngle / (360.0 * Constants.kTurretRotationsPerTick)));//setForwardSoftLimit(Constants.kSoftMaxTurretAngle / (360.0 * Constants.kTurretRotationsPerTick));
-        falcon_.configReverseSoftLimitThreshold((int) (Constants.kSoftMinTurretAngle / (360.0 * Constants.kTurretRotationsPerTick)));//setReverseSoftLimit(Constants.kSoftMinTurretAngle / (360.0 * Constants.kTurretRotationsPerTick));
+        falcon_.configForwardSoftLimitThreshold((int) (Constants.kSoftMaxTurretAngle / (360.0 / Constants.kTurretTicksPerRotation)));//setForwardSoftLimit(Constants.kSoftMaxTurretAngle / (360.0 * Constants.kTurretRotationsPerTick));
+        falcon_.configReverseSoftLimitThreshold((int) (Constants.kSoftMinTurretAngle / (360.0 / Constants.kTurretTicksPerRotation)));//setReverseSoftLimit(Constants.kSoftMinTurretAngle / (360.0 * Constants.kTurretRotationsPerTick));
     }
 
     // Set the desired angle of the turret (and put it into position control
     // mode if it isn't already).
     public synchronized void setDesiredAngle(Rotation2d angle) {
         //talon_.changeControlMode(CANTalon.TalonControlMode.Position);
-        falcon_.set(ControlMode.Position, angle.getRadians() / (2 * Math.PI * Constants.kTurretRotationsPerTick));
+        falcon_.set(ControlMode.Position, angle.getRadians() / (2 * Math.PI / Constants.kTurretTicksPerRotation));
     }
 
     // Manually move the turret (and put it into vbus mode if it isn't already).
-    synchronized void setOpenLoop(double speed) {
+    public synchronized void setOpenLoop(double speed) {
         //talon_.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
         falcon_.set(ControlMode.PercentOutput, speed);
     }
 
     // Tell the Talon it is at a given position.
     public synchronized void reset(Rotation2d actual_rotation) {
-        falcon_.setSelectedSensorPosition((int) (actual_rotation.getRadians() / (2 * Math.PI * Constants.kTurretRotationsPerTick))); //setPosition(actual_rotation.getRadians() / (2 * Math.PI * Constants.kTurretRotationsPerTick));
+        falcon_.setSelectedSensorPosition((int) (actual_rotation.getRadians() / (2 * Math.PI / Constants.kTurretTicksPerRotation))); //setPosition(actual_rotation.getRadians() / (2 * Math.PI * Constants.kTurretRotationsPerTick));
     }
 
     public synchronized Rotation2d getAngle() {
-        return Rotation2d.fromRadians(Constants.kTurretRotationsPerTick * falcon_.getSelectedSensorPosition() * 2 * Math.PI);
+        return Rotation2d.fromRadians( falcon_.getSelectedSensorPosition()/Constants.kTurretTicksPerRotation * 2 * Math.PI);
     }
 
     public synchronized boolean getForwardLimitSwitch() {
@@ -96,7 +104,8 @@ public class Turret extends Subsystem {
     }
 
     public synchronized double getSetpoint() {
-        return falcon_.getClosedLoopTarget() * Constants.kTurretRotationsPerTick * 360.0;
+       if(falcon_.getControlMode() == ControlMode.Position) return falcon_.getClosedLoopTarget() / Constants.kTurretTicksPerRotation * 360.0;
+       else return 0;
     }
 
     private synchronized double getError() {
@@ -119,6 +128,7 @@ public class Turret extends Subsystem {
     public void outputToSmartDashboard() {
         SmartDashboard.putNumber("turret_error", getError());
         SmartDashboard.putNumber("turret_angle", getAngle().getDegrees());
+        SmartDashboard.putNumber("turret_raw_angle", falcon_.getSelectedSensorPosition());
         SmartDashboard.putNumber("turret_setpoint", getSetpoint());
         SmartDashboard.putBoolean("turret_fwd_limit", getForwardLimitSwitch());
         SmartDashboard.putBoolean("turret_rev_limit", getReverseLimitSwitch());
@@ -128,5 +138,10 @@ public class Turret extends Subsystem {
     @Override
     public void zeroSensors() {
         reset(new Rotation2d());
+    }
+
+    @Override
+    public void registerEnabledLoops(Looper in) {
+        //in.register(mLoop);
     }
 }

@@ -7,14 +7,14 @@ import frc.lib.util.Rotation2d;
  * range, the turret angle, and the computer vision's track's ID.
  */
 public class ShooterAimingParameters {
-    double range;
+    public double range;
     Rotation2d turret_angle;
-    int track_id;
+    
 
-    public ShooterAimingParameters(double range, Rotation2d turret_angle, int track_id) {
+    public ShooterAimingParameters(double range, Rotation2d turret_angle) {
         this.range = range;
         this.turret_angle = turret_angle;
-        this.track_id = track_id;
+     
     }
 
     public double getRange() {
@@ -25,7 +25,5 @@ public class ShooterAimingParameters {
         return turret_angle;
     }
 
-    public int getTrackid() {
-        return track_id;
-    }
+  
 }

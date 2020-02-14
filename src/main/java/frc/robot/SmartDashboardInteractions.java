@@ -3,7 +3,7 @@ package frc.robot;
 import frc.robot.auto.AutoModeBase;
 import frc.robot.auto.AutoModeEndedException;
 import frc.robot.auto.modes.*;
-
+import frc.robot.subsystems.ShooterAimingParameters;
 import frc.lib.util.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -19,7 +19,7 @@ public class SmartDashboardInteractions {
 
     private static final String HOOD_TUNING_MODE = "Hood Tuning Mode";
     private static final String OUTPUT_TO_SMART_DASHBOARD = "Output To SmartDashboard";
-    private static final String SHOULD_RESET_UTILITY_ARM = "Robot in Start Position";
+
 
     private static final String AUTO_OPTIONS = "auto_options";
     private static final String SELECTED_AUTO_MODE = "selected_auto_mode";
@@ -33,7 +33,7 @@ public class SmartDashboardInteractions {
     public void initWithDefaults() {
         SmartDashboard.putBoolean(HOOD_TUNING_MODE, false);
         SmartDashboard.putBoolean(OUTPUT_TO_SMART_DASHBOARD, true);
-        SmartDashboard.putBoolean(SHOULD_RESET_UTILITY_ARM, false);
+      
 
         JSONArray autoOptionsArray = new JSONArray();
         for (AutonOption autonOption : AutonOption.values()) {
@@ -53,13 +53,7 @@ public class SmartDashboardInteractions {
         return SmartDashboard.getBoolean(OUTPUT_TO_SMART_DASHBOARD, true);
     }
 
-    public boolean shouldResetUtilityArm() {
-        return SmartDashboard.getBoolean(SHOULD_RESET_UTILITY_ARM, false);
-    }
-
-    public void clearUtilityArmResetState() {
-        SmartDashboard.putBoolean(SHOULD_RESET_UTILITY_ARM, false);
-    }
+   
 
     public AutoModeBase getSelectedAutonMode() {
         String autoModeString = SmartDashboard.getString(SELECTED_AUTO_MODE, DEFAULT_MODE.name);
@@ -102,7 +96,6 @@ public class SmartDashboardInteractions {
         TWO_BALL_LOW_BAR("Low Bar - Two Ball"), //
         TWO_BALL_CLASS_BD("Class B/D - Two Ball"), //
         STAND_STILL("Stand Still"), //
-        CUSTOM("Custom"),
         TEST_DRIVE("TEST ONLY Driving");
 
         public final String name;
@@ -124,7 +117,19 @@ public class SmartDashboardInteractions {
         }
     }
 
-  
+    private ShooterAimingParameters getAimingHintForLane(AutonLane lane) {
+        if (lane == AutonLane.LANE_1) {
+            return new ShooterAimingParameters(160.0, Rotation2d.fromDegrees(-45));
+        } else if (lane == AutonLane.LANE_2) {
+            return new ShooterAimingParameters(150.0, Rotation2d.fromDegrees(-30));
+        } else if (lane == AutonLane.LANE_3) {
+            return new ShooterAimingParameters(140.0, Rotation2d.fromDegrees(-15));
+        } else if (lane == AutonLane.LANE_4) {
+            return new ShooterAimingParameters(140.0, Rotation2d.fromDegrees(10));
+        } else { /* if (lane == AutonLane.LANE_5) */
+            return new ShooterAimingParameters(140.0, Rotation2d.fromDegrees(25));
+        }
+    }
 
     private AutoModeBase createAutoMode(AutonOption autonOption, AutonLane autonLane) {
         switch (autonOption) {
@@ -132,24 +137,22 @@ public class SmartDashboardInteractions {
             return new StayHighOneBall(false);
         case STAY_HIGH_ONE_BALL_DRIVE_BACK:
             return new StayHighOneBall(true);
-        case GET_LOW_ONE_BALL:
-            return new GetLowOneBallMode(false, false);
+      /*  case GET_LOW_ONE_BALL:
+            return new GetLowOneBallMode(getAimingHintForLane(autonLane), false, false);
         case GET_LOW_COME_BACK_LEFT:
-            return new GetLowOneBallMode(true, false);
+            return new GetLowOneBallMode(getAimingHintForLane(autonLane), true, false);
         case GET_LOW_COME_BACK_RIGHT:
-            return new GetLowOneBallMode(true, true);
+            return new GetLowOneBallMode(getAimingHintForLane(autonLane), true, true);
         case CDF_ONE_BALL:
-            return new ChevalDeFriseMode(false, false);
+            return new ChevalDeFriseMode(getAimingHintForLane(autonLane), false, false);
         case CDF_COME_BACK_LEFT:
-            return new ChevalDeFriseMode(true, false);
+            return new ChevalDeFriseMode(getAimingHintForLane(autonLane), true, false);
         case CDF_COME_BACK_RIGHT:
-            return new ChevalDeFriseMode(true, true);
-        case CUSTOM:
-            return new Custom();
-       // case TWO_BALL_LOW_BAR:
-         //   return new TwoBallLowBarMode();
-        //case TWO_BALL_CLASS_BD:
-          //  return new TwoBallClassBDMode(getAimingHintForLane(autonLane));
+            return new ChevalDeFriseMode(getAimingHintForLane(autonLane), true, true);
+        case TWO_BALL_LOW_BAR:
+            return new TwoBallLowBarMode();
+        case TWO_BALL_CLASS_BD:
+            return new TwoBallClassBDMode(getAimingHintForLane(autonLane));*/
         case TEST_DRIVE:
             return new AutoModeBase() {
                 @Override

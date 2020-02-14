@@ -17,7 +17,7 @@ import frc.robot.Constants;
 import frc.robot.Kinematics;
 import frc.robot.RobotState;
 import frc.robot.loops.Loop;
-
+import frc.robot.loops.Looper;
 import frc.lib.util.AdaptivePurePursuitController;
 import frc.lib.util.DriveSignal;
 import frc.lib.util.Path;
@@ -200,9 +200,9 @@ public class Drive extends Subsystem {
         return talon;
     }
 
-    public Loop getLoop() {
+    /*public Loop getLoop() {
         return mLoop;
-    }
+    }*/
 
    /* protected synchronized void setLeftRightPower(double left, double right) {
         leftMaster_.set(left);
@@ -489,5 +489,10 @@ public class Drive extends Subsystem {
         public Rotation2d getHeading() {
             return headingSetpoint_;
         }
+    }
+
+    @Override
+    public void registerEnabledLoops(Looper in) {
+        in.register(mLoop);
     }
 }

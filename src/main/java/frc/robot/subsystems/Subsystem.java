@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import frc.robot.loops.Looper;
+
 /**
  * The Subsystem abstract class, which serves as a basic framework for all robot
  * subsystems. Each subsystem outputs commands to SmartDashboard, has a stop
@@ -14,9 +16,15 @@ package frc.robot.subsystems;
  * at the start of the match.
  */
 public abstract class Subsystem {
+
+    public void writeToLog() {
+    };
+
     public abstract void outputToSmartDashboard();
 
     public abstract void stop();
 
     public abstract void zeroSensors();
+
+    public abstract void registerEnabledLoops(Looper enabledLooper);
 }

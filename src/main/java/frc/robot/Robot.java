@@ -1,13 +1,18 @@
 package frc.robot;
 
+import frc.robot.StateMachines.Shooter;
 import frc.robot.auto.AutoModeExecuter;
 import frc.robot.loops.GyroCalibrator;
 import frc.robot.loops.Looper;
 import frc.robot.loops.RobotStateEstimator;
-
+import frc.robot.loops.TurretResetter;
+import frc.robot.loops.VisionProcessor;
 import frc.robot.subsystems.Drive;
 
+import frc.robot.subsystems.Turret;
 import frc.lib.util.*;
+
+import java.util.Arrays;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
@@ -37,7 +42,7 @@ public class Robot extends TimedRobot {
 
     AutoModeExecuter mAutoModeExecuter = null;
 
-   
+   Shooter mShooter = Shooter.getInstance();
 
     // Other parts of the robot
     CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
@@ -45,43 +50,37 @@ public class Robot extends TimedRobot {
 
     RobotState mRobotState = RobotState.getInstance();
 
+
+       // Create subsystem manager
+       private final SubsystemManager mSubsystemManager = new SubsystemManager(Arrays.asList(Drive.getInstance(), /*Flywheel.getInstance(), 
+       Hood.getInstance(), */Turret.getInstance(), mShooter));
+   
     // Enabled looper is called at 100Hz whenever the robot is enabled
     Looper mEnabledLooper = new Looper();
     // Disabled looper is called at 100Hz whenever the robot is disabled
-    Looper mDisabledLooper = new Looper();
+    //Looper mDisabledLooper = new Looper();
 
     SmartDashboardInteractions mSmartDashboardInteractions = new SmartDashboardInteractions();
 
     boolean mLogToSmartdashboard = true;
     boolean mHoodTuningMode = false;
 
-    boolean mGetDown = false;
+   
 
     public Robot() {
         CrashTracker.logRobotConstruction();
     }
 
-    public void stopAll() {
-        mDrive.stop();
+    public void zeroAllSensors() {
+        mSubsystemManager.zeroSensors();
      
     }
 
-    public void outputAllToSmartDashboard() {
-        if (mLogToSmartdashboard) {
-            mDrive.outputToSmartDashboard();
-        
-            mRobotState.outputToSmartDashboard();
-        
-            mEnabledLooper.outputToSmartDashboard();
-        }
-      
-    }
+    
 
-    public void zeroAllSensors() {
-        mDrive.zeroSensors();
-       
-        mRobotState.reset(Timer.getFPGATimestamp(), new RigidTransform2d());
-    }
+   
+
+  
 
     /**
      * This function is run when the robot is first started up and should be
@@ -92,20 +91,21 @@ public class Robot extends TimedRobot {
         try {
             CrashTracker.logRobotInit();
            
-            // Reset all state
-            zeroAllSensors();
+           
 
            c=new Compressor();
 
             // Configure loopers
 
-            
+            mSubsystemManager.registerEnabledLoops(mEnabledLooper);
            
             mEnabledLooper.register(RobotStateEstimator.getInstance());
+            mEnabledLooper.register(new TurretResetter());
+            mEnabledLooper.register( VisionProcessor.getInstance());
           
-            mEnabledLooper.register(mDrive.getLoop());
+           // mEnabledLooper.register(mDrive.getLoop());
            
-            mDisabledLooper.register(new GyroCalibrator());
+            //mDisabledLooper.register(new GyroCalibrator());
 
             mSmartDashboardInteractions.initWithDefaults();
 
@@ -114,6 +114,9 @@ public class Robot extends TimedRobot {
             CrashTracker.logThrowableCrash(t);
             throw t;
         }
+
+         // Reset all state
+         zeroAllSensors();
     }
 
     @Override
@@ -126,15 +129,20 @@ public class Robot extends TimedRobot {
             mAutoModeExecuter = null;
 
             // Configure loopers
+            //mEnabledLooper.stop();
+            //mDisabledLooper.start();
+
             mEnabledLooper.stop();
-            mDisabledLooper.start();
+
+            // Call stop on all our Subsystems.
+            mSubsystemManager.stop();
 
             c.stop();
 
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             mDrive.setBrakeMode(true);
             // Stop all actuators
-            stopAll();
+           
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;
@@ -157,11 +165,10 @@ public class Robot extends TimedRobot {
             mDrive.setHighGear(true);
             mDrive.setBrakeMode(true);
             
-          
+            mShooter.setHoodAdjustment(mSmartDashboardInteractions.areAutoBallsWorn()
+            ? Constants.kOldBallHoodAdjustment : Constants.kNewBallHoodAdjustment);
             c.start();
            
-            // Configure loopers
-            mDisabledLooper.stop();
             mEnabledLooper.start();
 
             mAutoModeExecuter = new AutoModeExecuter();
@@ -188,12 +195,12 @@ public class Robot extends TimedRobot {
            c.start();
 
             // Configure loopers
-            mDisabledLooper.stop();
+            //mDisabledLooper.stop();
             mEnabledLooper.start();
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             mDrive.setBrakeMode(false);
 
-            mGetDown = false;
+            
            
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
@@ -210,17 +217,22 @@ public class Robot extends TimedRobot {
      */
     public void disabledPeriodic() {
         try {
-            stopAll();
+         
 
-            mDrive.resetEncoders();
+            //mDrive.resetEncoders();
 
-            outputAllToSmartDashboard();
+            //outputAllToSmartDashboard();
 
-           
+            zeroAllSensors();
+        
+            mHoodTuningMode = mSmartDashboardInteractions.isInHoodTuningMode();
             mLogToSmartdashboard = mSmartDashboardInteractions.shouldLogToSmartDashboard();
-            mRobotState.reset(Timer.getFPGATimestamp(), new RigidTransform2d());
+            mRobotState.reset(Timer.getFPGATimestamp(), new RigidTransform2d(), Turret.getInstance().getAngle());
+           
+            //mLogToSmartdashboard = mSmartDashboardInteractions.shouldLogToSmartDashboard();
+            //mRobotState.reset(Timer.getFPGATimestamp(), new RigidTransform2d());
 
-            
+            allPeriodic();
 
             System.gc();
         } catch (Throwable t) {
@@ -239,10 +251,9 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         try {
-           
+
             double throttle = mControls.getThrottle();
             double turn = mControls.getTurn();
-          
             if (mControls.getTractionControl()) {
                 Rotation2d heading_setpoint = mDrive.getGyroAngle();
                 if (mDrive.getControlState() == Drive.DriveControlState.VELOCITY_HEADING_CONTROL) {
@@ -252,7 +263,7 @@ public class Robot extends TimedRobot {
                         mCheesyDriveHelper.handleDeadband(throttle, CheesyDriveHelper.kThrottleDeadband)
                                 * Constants.kDriveLowGearMaxSpeedInchesPerSec,
                         heading_setpoint);
-            } else if(mControls.getAlignWithLoadStation()){
+            } /*else if(mControls.getAlignWithLoadStation()){
                 double angle = mDrive.getGyroAngle().getDegrees()-CameraVision.getTx();
                 Rotation2d heading_setpoint = new Rotation2d().fromDegrees(angle);
                 //if (mDrive.getControlState() == Drive.DriveControlState.VELOCITY_HEADING_CONTROL) {
@@ -262,18 +273,40 @@ public class Robot extends TimedRobot {
                         mCheesyDriveHelper.handleDeadband(throttle, CheesyDriveHelper.kThrottleDeadband)
                                 * Constants.kDriveLowGearMaxSpeedInchesPerSec,
                         heading_setpoint);
-            } else{
+            }*/else {
                 mDrive.setBrakeMode(false);
-                //mDrive.setHighGear(!mControls.getLowGear());
+                mDrive.setHighGear(!mControls.getLowGear());
                 mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControls.getQuickTurn()));
             }
             
-            if(mControls.getHighGear()) mDrive.setHighGear(true);
-            else if(mControls.getLowGear()) mDrive.setHighGear(false);
             
-           
 
-            outputAllToSmartDashboard();
+            if (mControls.getAutoAimNewBalls()) {
+                mShooter.setHoodAdjustment(Constants.kNewBallHoodAdjustment);
+                mShooter.setWantedState(Shooter.WantedState.WANT_AUTO);
+              
+            } else if (mControls.getAutoAimOldBalls()) {
+                mShooter.setHoodAdjustment(Constants.kOldBallHoodAdjustment);
+                mShooter.setWantedState(Shooter.WantedState.WANT_AUTO);
+              
+            }
+            
+            mShooter.setTurretManualScanOutput(mControls.getTurretManual() * .12);
+
+            if (mHoodTuningMode) {
+                mShooter.setTuningMode(true);
+                if (mControls.getHoodTuningPositiveButton()) {
+                    mShooter.setHoodManualScanOutput(0.05);
+                } else if (mControls.getHoodTuningNegativeButton()) {
+                    mShooter.setHoodManualScanOutput(-0.05);
+                } else {
+                    mShooter.setHoodManualScanOutput(0.0);
+                }
+            } else {
+                mShooter.setTuningMode(false);
+            }
+
+           allPeriodic();
      
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
@@ -284,7 +317,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousPeriodic() {
         try {
-            outputAllToSmartDashboard();
+            allPeriodic();
 
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
@@ -299,6 +332,16 @@ public class Robot extends TimedRobot {
       
     }
 
-
+  /**
+     * Helper function that is called in all periodic functions
+     */
+    public void allPeriodic() {
+        
+        mSubsystemManager.outputToSmartDashboard();
+        mSubsystemManager.writeToLog();
+        mEnabledLooper.outputToSmartDashboard();
+       
+        
+    }
    
 }

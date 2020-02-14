@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.Solenoid;
 public class Constants {
    
 
-    public static double kCenterOfTargetHeight = 89.0; // inches
+    public static double kCenterOfTargetHeight = 98.25; // inches TODO: get this
 
     // Pose of the turret frame w.r.t. the vehicle frame
     public static double kTurretXOffset = -7.376;
@@ -22,9 +22,18 @@ public class Constants {
     public static double kCameraXOffset = -6.454;
     public static double kCameraYOffset = 0.0;
     public static double kCameraZOffset = 19.75;
-    public static double kCameraPitchAngleDegrees = 35.75; // calibrated 4/22
-    public static double kCameraYawAngleDegrees = -1.0;
+    public static double kCameraPitchAngleDegrees = 30;//35.75; // calibrated 4/22
+    public static double kCameraYawAngleDegrees = 0;//-1.0;
     public static double kCameraDeadband = 0.0;
+
+    // Goal tracker constants
+    public static double kMaxGoalTrackAge = 0.3;
+    public static double kMaxTrackerDistance = 18.0;
+    public static double kCameraFrameRate = 90.0;
+    //public static double kTrackReportComparatorStablityWeight = 1.0;
+    //public static double kTrackReportComparatorAgeWeight = 1.0;
+    //public static double kTrackReportComparatorSwitchingWeight = 3.0;
+    //public static double kTrackReportComparatorDistanceWeight = 2.0; // Unused
 
    
     // Wheels
@@ -47,10 +56,9 @@ public class Constants {
      // Hood constants
      public static double kMinHoodAngle = 42.48;
      public static double kMaxHoodAngle = 71.42;
-     public static double kBatterHoodAngle = 42.5;
      public static double kHoodNeutralAngle = 42.5;
      public static double kHoodOnTargetTolerance = 0.4;
-     public static double kHoodGearReduction = 20/564; //TODO: what does this number do?
+     public static double kHoodGearReduction = 20/564; 
 
       // Turret constants
     public static double kHardMaxTurretAngle = 135;
@@ -58,7 +66,7 @@ public class Constants {
     public static double kSoftMaxTurretAngle = 132;
     public static double kSoftMinTurretAngle = -132;
     public static double kTurretOnTargetTolerance = 1.0;
-    public static double kTurretRotationsPerTick = 1/(2048*(40/10)*(40/20)*(314/40));
+    public static double kTurretTicksPerRotation = (2048*(40/10)*(40/20)*(314/40));
 
     // Flywheel constants
     public static double kFlywheelOnTargetTolerance = 100.0;
@@ -76,9 +84,7 @@ public class Constants {
     public static double kLoadingTime = 0.5;
     public static double kStowingOverrideTime = 2.0;
 
-    // Goal tracker constants
-    public static double kMaxTrackerDistance = 18.0;
-    
+   
   
 
     public static double kLooperDt = 0.01;
@@ -127,7 +133,7 @@ public class Constants {
 
     // PID gains for turret position loop
     // Units: error is 4096 counts/rev. Max output is +/- 1023 units.
-    public static double kTurretKp = 0.7;
+    public static double kTurretKp = .07;//0.7;
     public static double kTurretKi = 0.0;
     public static double kTurretKd = 30.0;
     public static double kTurretKf = 0;

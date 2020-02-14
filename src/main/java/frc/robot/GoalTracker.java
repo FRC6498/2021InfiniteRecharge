@@ -1,4 +1,4 @@
-package frc.robot;
+/*package frc.robot;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,12 +15,12 @@ import frc.lib.util.Translation2d;
  * jitter from vibration of the camera.
  * 
  * @see GoalTrack.java
- */
+ *//*
 public class GoalTracker {
     /**
      * Track reports contain all of the relevant information about a given goal
      * track.
-     */
+     
     public static class TrackReport {
         // Translation from the field frame to the goal
         public Translation2d field_to_goal;
@@ -48,7 +48,7 @@ public class GoalTracker {
      * active (e.g. we see or have recently seen multiple goals). They contain
      * heuristics used to pick which track we should aim at by calculating a
      * score for each track (highest score wins).
-     */
+     *//*
     public static class TrackReportComparator implements Comparator<TrackReport> {
         // Reward tracks for being more stable (seen in more frames)
         double mStabilityWeight;
@@ -102,7 +102,7 @@ public class GoalTracker {
         mCurrentTracks.clear();
     }
 
-    public void update(double timestamp, List<Translation2d> field_to_goals) {
+    /*public void update(double timestamp, List<Translation2d> field_to_goals) {
         boolean hasUpdatedTrack = false;
         // Try to update existing tracks
         for (Translation2d target : field_to_goals) {
@@ -143,4 +143,4 @@ public class GoalTracker {
         }
         return rv;
     }
-}
+}*/

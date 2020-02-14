@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import frc.robot.Constants;
 import frc.robot.loops.Loop;
+import frc.robot.loops.Looper;
 import frc.lib.util.ContinuousRotationServo;
 import frc.lib.util.MA3AnalogEncoder;
 
@@ -30,6 +31,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * @see Turret
  * @see Superstructure
  */
+
+ /*
 public class Hood extends Subsystem {
     private ContinuousRotationServo servo_;
     
@@ -37,15 +40,22 @@ public class Hood extends Subsystem {
     private boolean has_homed_;
     private SynchronousPID pid_;
 
+    private static Hood instance_ = new Hood();
+
+    public static Hood getInstance() {
+        return instance_;
+    }
+
+
     enum ControlMode {
         HOMING, OPEN_LOOP, POSITION
     }
 
-    ControlMode control_mode_;
+    ControlMode control_mode_=ControlMode.HOMING;
 
-    Loop hood_loop_ = new Loop() {
+    Loop mLoop = new Loop() {
         static final double kHomingTimeSeconds = 1.0;
-        ControlMode last_iteration_control_mode_ = ControlMode.OPEN_LOOP;
+        ControlMode last_iteration_control_mode_ = ControlMode.HOMING;
         double homing_start_time_ = 0;
 
         @Override
@@ -84,7 +94,7 @@ public class Hood extends Subsystem {
         }
     };
 
-    public Hood() {
+    private Hood() {
         servo_ = new ContinuousRotationServo(Constants.kHoodServoPWM);
  
         encoder_ = new MA3AnalogEncoder(Constants.kHoodEncoderAnalog);
@@ -98,16 +108,14 @@ public class Hood extends Subsystem {
         control_mode_ = ControlMode.OPEN_LOOP;
     }
 
-    public Loop getLoop() {
-        return hood_loop_;
-    }
+   
 
     /**
      * Sets the angle of the hood to a specified angle.
      * 
      * @param A
      *            set angle
-     */
+     
     public synchronized void setDesiredAngle(Rotation2d angle) {
         if (control_mode_ != ControlMode.HOMING && control_mode_ != ControlMode.POSITION) {
             control_mode_ = ControlMode.POSITION;
@@ -120,7 +128,7 @@ public class Hood extends Subsystem {
      * Gets the current angle of the hood.
      * 
      * @return The hood's current angle.
-     */
+     
     public synchronized Rotation2d getAngle() {
         return Rotation2d.fromDegrees(
                 encoder_.getContinuousAngleDegrees() * Constants.kHoodGearReduction + Constants.kMinHoodAngle);
@@ -130,7 +138,7 @@ public class Hood extends Subsystem {
         servo_.set(power);
     }
 
-    synchronized void setOpenLoop(double power) {
+    public synchronized void setOpenLoop(double power) {
         if (control_mode_ != ControlMode.HOMING) {
             set(power);
             control_mode_ = ControlMode.OPEN_LOOP;
@@ -139,14 +147,14 @@ public class Hood extends Subsystem {
 
     /**
      * Sets the hood state such that it begins retracting
-     */
+     
     public synchronized void homeSystem() {
         control_mode_ = ControlMode.HOMING;
     }
 
     /**
      * Makes the hood assembly begin to retract, or home.
-     */
+     
     synchronized void startHoming() {
         control_mode_ = ControlMode.HOMING;
         set(-1.0);
@@ -158,7 +166,7 @@ public class Hood extends Subsystem {
      * 
      * @param If
      *            the hood has fully retracted.
-     */
+     
     synchronized void stopHoming(boolean success) {
         if (success) {
             has_homed_ = true;
@@ -181,7 +189,7 @@ public class Hood extends Subsystem {
     /**
      * @return If the hood position is within a set tolerance to a specified
      *         value.
-     */
+     
     public synchronized boolean isOnTarget() {
         return (has_homed_ && control_mode_ == ControlMode.POSITION
                 && Math.abs(pid_.getError()) < Constants.kHoodOnTargetTolerance);
@@ -209,6 +217,10 @@ public class Hood extends Subsystem {
     public synchronized void zeroSensors() {
         encoder_.zero();
     }
-
-   
+    
+    @Override
+    public void registerEnabledLoops(Looper in) {
+        in.register(mLoop);
+    }
 }
+*/

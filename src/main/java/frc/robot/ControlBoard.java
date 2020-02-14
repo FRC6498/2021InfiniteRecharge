@@ -18,12 +18,13 @@ public class ControlBoard {
 
   //  private final Joystick mThrottleStick;
   //  private final Joystick mTurnStick;
-    private final XboxController mDriver;
+    private final XboxController mDriver, mOperator;
 
     private ControlBoard() {
       //  mThrottleStick = new Joystick(0);
       //  mTurnStick = new Joystick(1);
        mDriver = new XboxController(0);
+       mOperator = new XboxController(1);
 
     }
 
@@ -63,12 +64,38 @@ public class ControlBoard {
    }
     
    public boolean getLowGear(){
-       return mDriver.getBumper(Hand.kLeft);
+       return mDriver.getBumper(Hand.kRight);
    }
 
-   public boolean getHighGear(){
-    return mDriver.getBumper(Hand.kRight);
+   //OPERATOR CONTROLS
+
+   public double getTurretManual() {
+    if (mOperator.getXButton()) {
+        return 1.0;
+    } else if (mOperator.getYButton()) {
+        return -1.0;
+    } else {
+        return 0.0;
+    }
 }
+
+    public boolean getAutoAimNewBalls() {
+        return mOperator.getAButton();
+    }
+
+    public boolean getAutoAimOldBalls() {
+        return mOperator.getBButton();
+    }
+
+    public boolean getHoodTuningPositiveButton() {
+        return mOperator.getPOV()==180;
+    }
+
+    public boolean getHoodTuningNegativeButton() {
+        return mOperator.getPOV()==0;
+    }
+    
+
 
 public double getTestControl(){
 return mDriver.getY(Hand.kRight);

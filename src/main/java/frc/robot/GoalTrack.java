@@ -21,22 +21,29 @@ import edu.wpi.first.wpilibj.Timer;
 public class GoalTrack {
     Map<Double, Translation2d> mObservedPositions = new TreeMap<>();
     Translation2d mSmoothedPosition = null;
-    int mId;
+    //int mId;
 
-    private GoalTrack() {
+    public  GoalTrack(double timestamp, Translation2d first_observation) {
+        mObservedPositions.put(timestamp, first_observation);
+        mSmoothedPosition = first_observation;
+    }
+
+    public void reset(){
+        mObservedPositions=new TreeMap<>();
+        mSmoothedPosition=null;
     }
 
     /**
      * Makes a new track based on the timestamp and the goal's coordinates (from
      * vision)
      */
-    public static GoalTrack makeNewTrack(double timestamp, Translation2d first_observation, int id) {
+    /*public static GoalTrack makeNewTrack(double timestamp, Translation2d first_observation) {
         GoalTrack rv = new GoalTrack();
         rv.mObservedPositions.put(timestamp, first_observation);
         rv.mSmoothedPosition = first_observation;
-        rv.mId = id;
+        
         return rv;
-    }
+    }*/
 
     public void emptyUpdate() {
         pruneByTime();
@@ -51,7 +58,7 @@ public class GoalTrack {
         if (!isAlive()) {
             return false;
         }
-        double distance = mSmoothedPosition.inverse().translateBy(new_observation).norm();
+        double distance = mSmoothedPosition.inverse().translateBy(new_observation).norm(); //I believe this is distance apart from previous targets (won't count if not close enough)
         if (distance < Constants.kMaxTrackerDistance) {
             mObservedPositions.put(timestamp, new_observation);
             pruneByTime();
@@ -72,7 +79,7 @@ public class GoalTrack {
      * 
      * @see Constants.java
      */
-    void pruneByTime() {
+    void pruneByTime() { //called each time there is an update
         double delete_before = Timer.getFPGATimestamp() - Constants.kMaxGoalTrackAge;
         for (Iterator<Map.Entry<Double, Translation2d>> it = mObservedPositions.entrySet().iterator(); it.hasNext();) {
             Map.Entry<Double, Translation2d> entry = it.next();
@@ -80,7 +87,7 @@ public class GoalTrack {
                 it.remove();
             }
         }
-        if (mObservedPositions.isEmpty()) {
+        if (mObservedPositions.isEmpty()) { //if all of them are too old, removes it
             mSmoothedPosition = null;
         } else {
             smooth();
@@ -116,7 +123,7 @@ public class GoalTrack {
         return Math.min(1.0, mObservedPositions.size() / (Constants.kCameraFrameRate * Constants.kMaxGoalTrackAge));
     }
 
-    public int getId() {
+  /*  public int getId() {
         return mId;
-    }
+    }*/
 }

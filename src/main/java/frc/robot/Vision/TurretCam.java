@@ -1,4 +1,5 @@
-package frc.robot;
+
+package frc.robot.Vision;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
@@ -7,7 +8,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
  * 
  * 
  */
-public class CameraVision {
+public class TurretCam {
 	private static NetworkTableInstance table = null;
 
 	/**
@@ -124,7 +125,7 @@ public class CameraVision {
 			table = NetworkTableInstance.getDefault();
 		}
 
-		return table.getTable("limelight-second").getEntry(key);
+		return table.getTable("limelight").getEntry(key);
 	}
 
 	

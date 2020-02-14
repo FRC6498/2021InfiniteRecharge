@@ -27,7 +27,7 @@ public class RobotStateEstimator implements Loop {
 
     RobotState robot_state_ = RobotState.getInstance();
     Drive drive_ = Drive.getInstance();
-    Turret turret_ = Shooter.getInstance().getTurret();
+    Turret turret_ = Turret.getInstance();
     double left_encoder_prev_distance_ = 0;
     double right_encoder_prev_distance_ = 0;
 

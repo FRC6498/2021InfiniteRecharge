@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import frc.robot.Constants;
+import frc.robot.loops.Looper;
 
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANPIDController;
@@ -29,12 +30,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * @see Turret
  * @see Superstructure
  */
+
+ /*
 public class Flywheel extends Subsystem {
     CANSparkMax neo_;
     CANEncoder encoder_;
     CANPIDController pid_;
 
-    public Flywheel() {
+    private static Flywheel instance_ = new Flywheel();
+
+    public static Flywheel getInstance() {
+        return instance_;
+    }
+
+    private Flywheel() {
         neo_ = new CANSparkMax(Constants.kFlyWheelNeoId, MotorType.kBrushless);
         encoder_ = neo_.getEncoder();
        
@@ -62,7 +71,7 @@ public class Flywheel extends Subsystem {
      * 
      * @param Set
      *            flywheel RPM
-     */
+     
    public  synchronized void setRpm(double rpm) {
         pid_.setReference(rpm, ControlType.kVelocity);
         rpmSetpoint=rpm;
@@ -79,7 +88,7 @@ public class Flywheel extends Subsystem {
     /**
      * @return If the flywheel RPM is within the tolerance to the specified set
      *         point.
-     */
+     
     public synchronized boolean isOnTarget() {
         return (Math.abs(getRpm() - getSetpoint()) < Constants.kFlywheelOnTargetTolerance);
     }
@@ -102,4 +111,10 @@ public class Flywheel extends Subsystem {
     public void zeroSensors() {
         // no-op
     }
+
+    @Override
+    public void registerEnabledLoops(Looper in) {
+        //in.register(mLoop);
+    }
 }
+*/

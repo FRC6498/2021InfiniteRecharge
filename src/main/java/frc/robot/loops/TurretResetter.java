@@ -11,7 +11,7 @@ import frc.robot.subsystems.Turret;
  */
 public class TurretResetter implements Loop {
     Shooter mShooter = Shooter.getInstance();
-    Turret mTurret = Shooter.getInstance().getTurret();
+    Turret mTurret = Turret.getInstance();
 
     @Override
     public void onStart() {
@@ -22,8 +22,10 @@ public class TurretResetter implements Loop {
     public void onLoop() {
         if (mTurret.getForwardLimitSwitch()) {
             mShooter.resetTurretAtMax();
+            System.out.println("Turret max");
         } else if (mTurret.getReverseLimitSwitch()) {
             mShooter.resetTurretAtMin();
+            System.out.println("Turret min");
         }
     }
 
