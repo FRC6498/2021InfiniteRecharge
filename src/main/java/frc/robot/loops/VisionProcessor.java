@@ -34,8 +34,11 @@ public class VisionProcessor implements Loop {
     @Override
     public void onLoop() {
         
-       if(TurretCam.isTarget()) robot_state_.addVisionUpdate(Timer.getFPGATimestamp(), new TargetInfo(TurretCam.getTx(), TurretCam.getTy()));
+       if(TurretCam.isTarget()) { //Only add update if actual target
+           robot_state_.addVisionUpdate(Timer.getFPGATimestamp(), new TargetInfo(TurretCam.getTx(), TurretCam.getTy()));
+           //System.out.println(TurretCam.getTx());
     }
+}
 
     @Override
     public void onStop() {

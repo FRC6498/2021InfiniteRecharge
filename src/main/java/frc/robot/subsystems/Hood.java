@@ -32,7 +32,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * @see Superstructure
  */
 
- /*
+ 
 public class Hood extends Subsystem {
     private ContinuousRotationServo servo_;
     
@@ -115,7 +115,7 @@ public class Hood extends Subsystem {
      * 
      * @param A
      *            set angle
-     
+     */
     public synchronized void setDesiredAngle(Rotation2d angle) {
         if (control_mode_ != ControlMode.HOMING && control_mode_ != ControlMode.POSITION) {
             control_mode_ = ControlMode.POSITION;
@@ -128,7 +128,7 @@ public class Hood extends Subsystem {
      * Gets the current angle of the hood.
      * 
      * @return The hood's current angle.
-     
+     */
     public synchronized Rotation2d getAngle() {
         return Rotation2d.fromDegrees(
                 encoder_.getContinuousAngleDegrees() * Constants.kHoodGearReduction + Constants.kMinHoodAngle);
@@ -147,14 +147,14 @@ public class Hood extends Subsystem {
 
     /**
      * Sets the hood state such that it begins retracting
-     
+     */
     public synchronized void homeSystem() {
         control_mode_ = ControlMode.HOMING;
     }
 
     /**
      * Makes the hood assembly begin to retract, or home.
-     
+     */
     synchronized void startHoming() {
         control_mode_ = ControlMode.HOMING;
         set(-1.0);
@@ -166,7 +166,7 @@ public class Hood extends Subsystem {
      * 
      * @param If
      *            the hood has fully retracted.
-     
+     */
     synchronized void stopHoming(boolean success) {
         if (success) {
             has_homed_ = true;
@@ -189,7 +189,7 @@ public class Hood extends Subsystem {
     /**
      * @return If the hood position is within a set tolerance to a specified
      *         value.
-     
+     */
     public synchronized boolean isOnTarget() {
         return (has_homed_ && control_mode_ == ControlMode.POSITION
                 && Math.abs(pid_.getError()) < Constants.kHoodOnTargetTolerance);
@@ -223,4 +223,3 @@ public class Hood extends Subsystem {
         in.register(mLoop);
     }
 }
-*/

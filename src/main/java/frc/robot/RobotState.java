@@ -93,8 +93,7 @@ public class RobotState {
         turret_rotation_ = new InterpolatingTreeMap<>(kObservationBufferSize);
         turret_rotation_.put(new InterpolatingDouble(start_time), initial_turret_rotation);
         goal_track = new GoalTrack(0, new Translation2d());
-        camera_pitch_correction_ = Rotation2d.fromDegrees(-Constants.kCameraPitchAngleDegrees);
-        camera_yaw_correction_ = Rotation2d.fromDegrees(-Constants.kCameraYawAngleDegrees);
+       
         differential_height_ = Constants.kCenterOfTargetHeight - Constants.kCameraZOffset;
     }
 
@@ -134,7 +133,7 @@ public class RobotState {
     public synchronized RigidTransform2d getCaptureTimeFieldToGoal() {
         RigidTransform2d rv = new RigidTransform2d();
         //for (TrackReport report : goal_tracker_.getTracks()) {
-            rv=RigidTransform2d.fromTranslation(goal_track.getSmoothedPosition());
+         synchronized(this) {  rv=RigidTransform2d.fromTranslation(goal_track.getSmoothedPosition());}
         //}
         return rv;
     }
@@ -150,17 +149,21 @@ public class RobotState {
 
        
             if (current_timestamp - goal_track.getLatestTimestamp() > kMaxTargetAge) {
+                //System.out.println("Max target age "+goal_track.getLatestTimestamp()+ " current: " + current_timestamp);
                 return null;
             }
-            // turret fixed (latest) -> vehicle (latest) -> field -> goals
-            RigidTransform2d latest_turret_fixed_to_goal = latest_turret_fixed_to_field
+            // turret fixed (latest) -> vehicle (latest) -> field -> goals  so getting where turret is relative to field origin then transforming by the field origin to the goal
+            RigidTransform2d latest_turret_fixed_to_goal;
+            synchronized(this){   latest_turret_fixed_to_goal = latest_turret_fixed_to_field
                     .transformBy(RigidTransform2d.fromTranslation(goal_track.getSmoothedPosition()));
-
+          }
             // We can actually disregard the angular portion of this pose. It is
             // the bearing that we care about!
-            rv=new ShooterAimingParameters(latest_turret_fixed_to_goal.getTranslation().norm(),
-            new Rotation2d(latest_turret_fixed_to_goal.getTranslation().getX(),
-                    latest_turret_fixed_to_goal.getTranslation().getY(), true));
+            rv=new ShooterAimingParameters(latest_turret_fixed_to_goal.getTranslation().norm(), //get hypot
+            new Rotation2d(latest_turret_fixed_to_goal.getTranslation().getX(), //get
+                    latest_turret_fixed_to_goal.getTranslation().getY(), true)); //angle
+
+           //System.out.println("Param: "+rv.getRange()+ " angle: "+rv.getTurretAngle());
         
         return rv;
     }
@@ -182,31 +185,16 @@ public class RobotState {
     public void addVisionUpdate(double timestamp, TargetInfo target) {
         Translation2d field_to_goal = new Translation2d();
         RigidTransform2d field_to_camera = getFieldToCamera(timestamp);
-        if (!(target==null)) {
+       
+                //counter clock wise is positivie thats why target yaw is inverted
+                //pretty sure x is positive forward, y is positive left
             
-                /*double ydeadband = (target.getY() > -Constants.kCameraDeadband
-                        && target.getY() < Constants.kCameraDeadband) ? 0.0 : target.getY();
-
-                // Compensate for camera yaw
-                double xyaw = target.getX() * camera_yaw_correction_.cos() + ydeadband * camera_yaw_correction_.sin();
-                double yyaw = ydeadband * camera_yaw_correction_.cos() - target.getX() * camera_yaw_correction_.sin();
-                double zyaw = target.getZ();
-
-                // Compensate for camera pitch
-                double xr = zyaw * camera_pitch_correction_.sin() + xyaw * camera_pitch_correction_.cos();
-                double yr = yyaw;
-                double zr = zyaw * camera_pitch_correction_.cos() - xyaw * camera_pitch_correction_.sin();
-
-                // find intersection with the goal
-                if (zr > 0) {
-                    double scaling = differential_height_ / zr;*/
-
-                double yaw = target.getYaw() - Constants.kCameraYawAngleDegrees;
+                double yaw = -target.getYaw() + Constants.kCameraYawAngleDegrees;
                 double pitch = target.getPitch() + Constants.kCameraPitchAngleDegrees;
 
-                double xr = (Constants.kTargetHeight-Constants.kCameraZOffset)/Math.tan(pitch);
+                double xr = (differential_height_)/Math.tan(pitch*(Math.PI/180)); //convert degrees to radians
 
-                double yr = xr*Math.tan(yaw);
+                double yr = xr*Math.tan(yaw*(Math.PI/180)); //conert degrees to radians
              
                     double distance = Math.hypot(xr, yr);// * scaling;
                     Rotation2d angle = new Rotation2d(xr, yr, true);
@@ -214,11 +202,14 @@ public class RobotState {
                             .transformBy(RigidTransform2d
                                     .fromTranslation(new Translation2d(distance * angle.cos(), distance * angle.sin())))
                             .getTranslation();
-            //c}
+            
+        
+        synchronized(this){
+           goal_track.tryUpdate(timestamp, field_to_goal);
         }
-        synchronized (this) {
-            goal_track.tryUpdate(timestamp, field_to_goal);
-        }
+           // System.out.println("time: "+timestamp+ " x: "+field_to_goal.getX()+" y: "+field_to_goal.getY());
+        
+    
     }
 
     public synchronized void resetVision() {
@@ -240,8 +231,8 @@ public class RobotState {
         RigidTransform2d pose = getCaptureTimeFieldToGoal();
         
             // Only output first goal
-            SmartDashboard.putNumber("goal_pose_x", pose.getTranslation().getX());
+           SmartDashboard.putNumber("goal_pose_x", pose.getTranslation().getX());
             SmartDashboard.putNumber("goal_pose_y", pose.getTranslation().getY());
-         
+        
     }
 }

@@ -48,7 +48,7 @@ public class ControlBoard {
     }
 
     public double getTurn() {
-        return mDriver.getX(Hand.kLeft);
+        return -mDriver.getX(Hand.kLeft);
     }
 
     public boolean getQuickTurn() {

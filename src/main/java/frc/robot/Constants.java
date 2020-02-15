@@ -14,14 +14,14 @@ public class Constants {
     public static double kCenterOfTargetHeight = 98.25; // inches TODO: get this
 
     // Pose of the turret frame w.r.t. the vehicle frame
-    public static double kTurretXOffset = -7.376;
+    public static double kTurretXOffset = 6;//-7.376;
     public static double kTurretYOffset = 0.0;
     public static double kTurretAngleOffsetDegrees = 0.0;
 
     // Pose of the camera frame w.r.t. the turret frame
-    public static double kCameraXOffset = -6.454;
+    public static double kCameraXOffset = -4.0589;//-6.454;
     public static double kCameraYOffset = 0.0;
-    public static double kCameraZOffset = 19.75;
+    public static double kCameraZOffset = 25.5;
     public static double kCameraPitchAngleDegrees = 30;//35.75; // calibrated 4/22
     public static double kCameraYawAngleDegrees = 0;//-1.0;
     public static double kCameraDeadband = 0.0;
@@ -54,17 +54,17 @@ public class Constants {
 
   
      // Hood constants
-     public static double kMinHoodAngle = 42.48;
-     public static double kMaxHoodAngle = 71.42;
-     public static double kHoodNeutralAngle = 42.5;
+     public static double kMinHoodAngle = 45;//42.48;
+     public static double kMaxHoodAngle = 75.96;//71.42;
+     public static double kHoodNeutralAngle = 45.5;//42.5;
      public static double kHoodOnTargetTolerance = 0.4;
      public static double kHoodGearReduction = 20/564; 
 
       // Turret constants
     public static double kHardMaxTurretAngle = 135;
     public static double kHardMinTurretAngle = -135;
-    public static double kSoftMaxTurretAngle = 132;
-    public static double kSoftMinTurretAngle = -132;
+    public static double kSoftMaxTurretAngle = 134;
+    public static double kSoftMinTurretAngle = -134;
     public static double kTurretOnTargetTolerance = 1.0;
     public static double kTurretTicksPerRotation = (2048*(40/10)*(40/20)*(314/40));
 
@@ -80,9 +80,8 @@ public class Constants {
     public static double kAutoAimPredictionTime = 0.25;
     public static int kAutoAimMinConsecutiveCyclesOnTarget = 3;
     public static double kShootActuationTime = 0.75;
-    public static double kHoodUnstowToFlywheelSpinTime = 0.4;
-    public static double kLoadingTime = 0.5;
-    public static double kStowingOverrideTime = 2.0;
+
+
 
    
   

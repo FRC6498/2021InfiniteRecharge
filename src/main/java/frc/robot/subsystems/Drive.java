@@ -160,14 +160,14 @@ public class Drive extends Subsystem {
         leftMaster_.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
         
         leftMaster_.setSensorPhase(false);
-        leftMaster_.setInverted(true);
-        leftChild_.setInverted(true);
+        leftMaster_.setInverted(false);
+        leftChild_.setInverted(false);
         
         rightMaster_.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
        
         rightMaster_.setSensorPhase(false);
-        rightMaster_.setInverted(false);
-        rightChild_.setInverted(false);
+        rightMaster_.setInverted(true);
+        rightChild_.setInverted(true);
         
 
         // Load velocity control gains

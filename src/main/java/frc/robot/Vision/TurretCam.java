@@ -125,7 +125,7 @@ public class TurretCam {
 			table = NetworkTableInstance.getDefault();
 		}
 
-		return table.getTable("limelight").getEntry(key);
+		return table.getTable("limelight-second").getEntry(key);
 	}
 
 	

@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj.Timer;
  */
 public class GoalTrack {
     Map<Double, Translation2d> mObservedPositions = new TreeMap<>();
-    Translation2d mSmoothedPosition = null;
+    Translation2d mSmoothedPosition = new Translation2d();
     //int mId;
 
     public  GoalTrack(double timestamp, Translation2d first_observation) {
@@ -30,7 +30,7 @@ public class GoalTrack {
 
     public void reset(){
         mObservedPositions=new TreeMap<>();
-        mSmoothedPosition=null;
+        mSmoothedPosition=new Translation2d();
     }
 
     /**
@@ -55,22 +55,30 @@ public class GoalTrack {
      * @return True if the track was updated
      */
     public boolean tryUpdate(double timestamp, Translation2d new_observation) {
-        if (!isAlive()) {
-            return false;
-        }
-        double distance = mSmoothedPosition.inverse().translateBy(new_observation).norm(); //I believe this is distance apart from previous targets (won't count if not close enough)
-        if (distance < Constants.kMaxTrackerDistance) {
+        //if (!isAlive()) {
+       //     return false;
+       // }
+      /* if(new_observation==null) {
+           System.out.println("new ob null");
+           return false;
+       }
+       if(mSmoothedPosition==null) {
+           System.out.println("smooth null");
+           return false;
+       }*/
+      //  double distance = mSmoothedPosition.inverse().translateBy(new_observation).norm(); //I believe this is distance apart from previous targets (won't count if not close enough)
+     //   if (distance < Constants.kMaxTrackerDistance) {
             mObservedPositions.put(timestamp, new_observation);
             pruneByTime();
             return true;
-        } else {
-            emptyUpdate();
-            return false;
-        }
+     //   } else {
+     //       emptyUpdate();
+           // return false;
+      //  }
     }
 
-    public boolean isAlive() {
-        return mObservedPositions.size() > 0;
+    public boolean hasData() {
+       return mObservedPositions.size() > 0;
     }
 
     /**
@@ -87,18 +95,18 @@ public class GoalTrack {
                 it.remove();
             }
         }
-        if (mObservedPositions.isEmpty()) { //if all of them are too old, removes it
-            mSmoothedPosition = null;
-        } else {
+       // if (mObservedPositions.isEmpty()) { //if all of them are too old, removes it
+      //      mSmoothedPosition = new Translation2d();
+      //  } else {
             smooth();
-        }
+      //  }
     }
 
     /**
      * Averages out the observed positions based on an set of observed positions
      */
     void smooth() {
-        if (isAlive()) {
+        if (hasData()) {
             double x = 0;
             double y = 0;
             for (Map.Entry<Double, Translation2d> entry : mObservedPositions.entrySet()) {
@@ -116,12 +124,12 @@ public class GoalTrack {
     }
 
     public double getLatestTimestamp() {
-        return mObservedPositions.keySet().stream().max(Double::compareTo).orElse(0.0);
+       return mObservedPositions.keySet().stream().max(Double::compareTo).orElse(0.0);
     }
 
-    public double getStability() {
-        return Math.min(1.0, mObservedPositions.size() / (Constants.kCameraFrameRate * Constants.kMaxGoalTrackAge));
-    }
+//   public double getStability() {
+ //       return Math.min(1.0, mObservedPositions.size() / (Constants.kCameraFrameRate * Constants.kMaxGoalTrackAge));
+ //   }
 
   /*  public int getId() {
         return mId;

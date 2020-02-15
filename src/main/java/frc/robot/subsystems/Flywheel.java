@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * @see Superstructure
  */
 
- /*
+ 
 public class Flywheel extends Subsystem {
     CANSparkMax neo_;
     CANEncoder encoder_;
@@ -71,7 +71,7 @@ public class Flywheel extends Subsystem {
      * 
      * @param Set
      *            flywheel RPM
-     
+     */
    public  synchronized void setRpm(double rpm) {
         pid_.setReference(rpm, ControlType.kVelocity);
         rpmSetpoint=rpm;
@@ -88,7 +88,7 @@ public class Flywheel extends Subsystem {
     /**
      * @return If the flywheel RPM is within the tolerance to the specified set
      *         point.
-     
+     */
     public synchronized boolean isOnTarget() {
         return (Math.abs(getRpm() - getSetpoint()) < Constants.kFlywheelOnTargetTolerance);
     }
@@ -117,4 +117,3 @@ public class Flywheel extends Subsystem {
         //in.register(mLoop);
     }
 }
-*/

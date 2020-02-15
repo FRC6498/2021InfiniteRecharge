@@ -15,7 +15,8 @@ import frc.robot.Vision.TurretCam.LightMode;
 import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
 import frc.robot.subsystems.Drive;
-
+import frc.robot.subsystems.Flywheel;
+import frc.robot.subsystems.Hood;
 import frc.robot.subsystems.ShooterAimingParameters;
 import frc.robot.subsystems.Subsystem;
 import frc.robot.subsystems.Turret;
@@ -78,11 +79,11 @@ public class Shooter extends Subsystem {
     int mConsecutiveCyclesOnTarget = 0;
     int mNumShotsFired = 0;
 
-    private List<ShooterAimingParameters> mCachedAimingParams = new ArrayList<>();
+  //  private List<ShooterAimingParameters> mCachedAimingParams = new ArrayList<>();
 
     Turret mTurret = Turret.getInstance();
-   // Flywheel mFlywheel = Flywheel.getInstance();
-   // Hood mHood = Hood.getInstance();
+    Flywheel mFlywheel = Flywheel.getInstance();
+    Hood mHood = Hood.getInstance();
    
     
     RobotState mRobotState = RobotState.getInstance();
@@ -174,6 +175,7 @@ public class Shooter extends Subsystem {
         SmartDashboard.putNumber("current_range", mCurrentRangeForLogging);
         SmartDashboard.putNumber("current_angle", mCurrentAngleForLogging);
         SmartDashboard.putString("shooter_state", "" + mSystemState);
+        SmartDashboard.putBoolean("shooter_ready_to_fire",readyToFire(Timer.getFPGATimestamp()));
     }
 
     @Override
@@ -184,16 +186,18 @@ public class Shooter extends Subsystem {
     @Override
     public synchronized void zeroSensors() {
         
-        mCachedAimingParams.clear();
+      //  mCachedAimingParams.clear();
        
     }
 
     public synchronized void resetTurretAtMax() {
         mTurret.reset(Rotation2d.fromDegrees(Constants.kHardMaxTurretAngle));
+        System.out.println("reset at max");
     }
 
     public synchronized void resetTurretAtMin() {
         mTurret.reset(Rotation2d.fromDegrees(Constants.kHardMinTurretAngle));
+        System.out.println("reset at min");
     }
 
     public synchronized void zeroTurret() {
@@ -238,10 +242,10 @@ public class Shooter extends Subsystem {
 
     private synchronized SystemState handleIdle(){
         if(mStateChanged){
-            //mFlywheel.stop();
+            mFlywheel.stop();
             mTurret.setDesiredAngle(new Rotation2d());
        
-            //mHood.setDesiredAngle(Rotation2d.fromDegrees(Constants.kBatterHoodAngle));
+            mHood.setDesiredAngle(Rotation2d.fromDegrees(Constants.kHoodNeutralAngle));
         }
 
         switch(mWantedState){
@@ -281,13 +285,13 @@ public class Shooter extends Subsystem {
             // Manual search
             if (mTurretManualSetpoint != null) {
                 mTurret.setDesiredAngle(mTurretManualSetpoint.getTurretAngle());
-               // mHood.setDesiredAngle(Rotation2d.fromDegrees(getHoodAngleForRange(mTurretManualSetpoint.range)));
+               mHood.setDesiredAngle(Rotation2d.fromDegrees(getHoodAngleForRange(mTurretManualSetpoint.range)));
             } else {
                 mTurret.setOpenLoop(mTurretManualScanOutput);
                 if (!mTuningMode) {
-                  //  mHood.setDesiredAngle(Rotation2d.fromDegrees(Constants.kHoodNeutralAngle));
+                    mHood.setDesiredAngle(Rotation2d.fromDegrees(Constants.kHoodNeutralAngle));
                 } else {
-                   // mHood.setOpenLoop(mHoodManualScanOutput);
+                   mHood.setOpenLoop(mHoodManualScanOutput);
                 }
             }
             //mFlywheel.setRpm(Constants.kFlywheelGoodBallRpmSetpoint);
@@ -303,14 +307,14 @@ public class Shooter extends Subsystem {
                         && aimingParameters.getRange() <= Constants.kAutoAimMaxRange
                         /*&& (allow_changing_tracks || mCurrentTrackId == aimingParameters.getTrackid())*/) {
                     // This target works
-                   // mFlywheel.setRpm(getShootingSetpointRpm(aimingParameters.getRange()));
+                    mFlywheel.setRpm(getShootingSetpointRpm(aimingParameters.getRange()));
                     if (!mTuningMode) {
                         double angle_degrees = getHoodAngleForRange(aimingParameters.getRange()) + mHoodAdjustment;
                         angle_degrees = Math.max(angle_degrees, Constants.kMinHoodAngle);
                         angle_degrees = Math.min(angle_degrees, Constants.kMaxHoodAngle);
-                       // mHood.setDesiredAngle(Rotation2d.fromDegrees(angle_degrees));
+                        mHood.setDesiredAngle(Rotation2d.fromDegrees(angle_degrees));
                     } else {
-                        //mHood.setOpenLoop(mHoodManualScanOutput);
+                        mHood.setOpenLoop(mHoodManualScanOutput);
                     }
                     mTurret.setDesiredAngle(aimingParameters.getTurretAngle());
                     mCurrentAngleForLogging = aimingParameters.getTurretAngle().getDegrees();
@@ -351,14 +355,14 @@ public class Shooter extends Subsystem {
 
     private ShooterAimingParameters getCurrentAimingParameters(double now) {
         ShooterAimingParameters param = mRobotState.getAimingParameters(now);
-        if(param!=null)mCachedAimingParams.add(param);
+        //if(param!=null)mCachedAimingParams.add(param);
         return param;
 
     }
 
-    public List<ShooterAimingParameters> getCachedAimingParams() {
-        return mCachedAimingParams;
-    }
+    //public List<ShooterAimingParameters> getCachedAimingParams() {
+   //     return mCachedAimingParams;
+   // }
 
     
 
@@ -370,11 +374,11 @@ public class Shooter extends Subsystem {
         return Constants.kFlywheelAutoAimMap.getInterpolated(new InterpolatingDouble(range)).value;
     }
 
-    private boolean readyToFire(SystemState state, double now) {
+    private boolean readyToFire(double now) {
         boolean is_stopped = Math.abs(mDrive.getLeftVelocityInchesPerSec()) < Constants.kAutoShootMaxDriveSpeed
                 && Math.abs(mDrive.getRightVelocityInchesPerSec()) < Constants.kAutoShootMaxDriveSpeed;
-        if (state == SystemState.AUTO_AIM) {
-            if (/*(mTuningMode || mHood.isOnTarget()) && mFlywheel.isOnTarget() && */mTurret.isOnTarget()
+        if (mSystemState == SystemState.AUTO_AIM) {
+            if ((mTuningMode || mHood.isOnTarget()) && mFlywheel.isOnTarget() && mTurret.isOnTarget()
                     && hasTarget()) {
                 mConsecutiveCyclesOnTarget++;
             } else {

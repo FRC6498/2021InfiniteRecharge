@@ -1,25 +1,21 @@
 package frc.robot;
 
-import frc.robot.StateMachines.Shooter;
-import frc.robot.auto.AutoModeExecuter;
-import frc.robot.loops.GyroCalibrator;
-import frc.robot.loops.Looper;
-import frc.robot.loops.RobotStateEstimator;
-import frc.robot.loops.TurretResetter;
-import frc.robot.loops.VisionProcessor;
-import frc.robot.subsystems.Drive;
-
-import frc.robot.subsystems.Turret;
-import frc.lib.util.*;
-
 import java.util.Arrays;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-
-import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
+import frc.lib.util.CrashTracker;
+import frc.lib.util.DriveSignal;
+import frc.lib.util.RigidTransform2d;
+import frc.lib.util.Rotation2d;
+import frc.robot.StateMachines.Shooter;
+import frc.robot.auto.AutoModeExecuter;
+import frc.robot.loops.Looper;
+import frc.robot.loops.RobotStateEstimator;
+import frc.robot.loops.VisionProcessor;
+import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.Turret;
 
 /**
  * The main robot class, which instantiates all robot parts and helper classes.
@@ -100,7 +96,7 @@ public class Robot extends TimedRobot {
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
            
             mEnabledLooper.register(RobotStateEstimator.getInstance());
-            mEnabledLooper.register(new TurretResetter());
+            
             mEnabledLooper.register( VisionProcessor.getInstance());
           
            // mEnabledLooper.register(mDrive.getLoop());
@@ -194,6 +190,8 @@ public class Robot extends TimedRobot {
 
            c.start();
 
+           zeroAllSensors();
+
             // Configure loopers
             //mDisabledLooper.stop();
             mEnabledLooper.start();
@@ -223,7 +221,7 @@ public class Robot extends TimedRobot {
 
             //outputAllToSmartDashboard();
 
-            zeroAllSensors();
+            //zeroAllSensors();
         
             mHoodTuningMode = mSmartDashboardInteractions.isInHoodTuningMode();
             mLogToSmartdashboard = mSmartDashboardInteractions.shouldLogToSmartDashboard();
@@ -340,7 +338,7 @@ public class Robot extends TimedRobot {
         mSubsystemManager.outputToSmartDashboard();
         mSubsystemManager.writeToLog();
         mEnabledLooper.outputToSmartDashboard();
-       
+        mRobotState.outputToSmartDashboard();
         
     }
    

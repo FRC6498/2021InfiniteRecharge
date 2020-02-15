@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import frc.robot.Constants;
+import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
 import frc.lib.util.Rotation2d;
 
@@ -12,6 +13,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
+
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -34,11 +36,47 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Turret extends Subsystem {
     private TalonFX falcon_;
 
+    private boolean has_homed_=false;
+
     private static Turret instance_ = new Turret();
 
     public static Turret getInstance() {
         return instance_;
     }
+
+ 
+
+    Loop mLoop = new Loop() {
+       
+  
+      
+
+        @Override
+        public void onLoop() {
+            synchronized (Turret.this) {
+                
+               
+               if(!has_homed_) handleHoming();
+
+                checkLimits();
+            }
+        }
+
+        @Override
+        public void onStart() {
+            synchronized (Turret.this) {
+               if(!has_homed_) startHoming();
+                
+            }
+        }
+
+        @Override
+        public void onStop() {
+            synchronized (Turret.this) {
+               stop();
+            }
+        }
+    };
 
 
     private Turret() {
@@ -73,11 +111,37 @@ public class Turret extends Subsystem {
         falcon_.configReverseSoftLimitThreshold((int) (Constants.kSoftMinTurretAngle / (360.0 / Constants.kTurretTicksPerRotation)));//setReverseSoftLimit(Constants.kSoftMinTurretAngle / (360.0 * Constants.kTurretRotationsPerTick));
     }
 
+    
+
+
+    
+    private synchronized void startHoming(){
+        has_homed_=false;
+            setOpenLoop(-.2);
+            falcon_.overrideSoftLimitsEnable(true);
+    }
+
+    private synchronized void handleHoming(){
+
+        if(checkLimits()){
+            setOpenLoop(0);
+            has_homed_=true;
+            falcon_.overrideSoftLimitsEnable(false);
+            setDesiredAngle(Rotation2d.fromDegrees(0));
+        }
+
+    }
+  
+
+
+
+
     // Set the desired angle of the turret (and put it into position control
     // mode if it isn't already).
     public synchronized void setDesiredAngle(Rotation2d angle) {
         //talon_.changeControlMode(CANTalon.TalonControlMode.Position);
-        falcon_.set(ControlMode.Position, angle.getRadians() / (2 * Math.PI / Constants.kTurretTicksPerRotation));
+
+        if(has_homed_) falcon_.set(ControlMode.Position, angle.getRadians() / (2 * Math.PI / Constants.kTurretTicksPerRotation));
     }
 
     // Manually move the turret (and put it into vbus mode if it isn't already).
@@ -93,6 +157,18 @@ public class Turret extends Subsystem {
 
     public synchronized Rotation2d getAngle() {
         return Rotation2d.fromRadians( falcon_.getSelectedSensorPosition()/Constants.kTurretTicksPerRotation * 2 * Math.PI);
+    }
+
+    private synchronized boolean checkLimits(){
+        if (getForwardLimitSwitch()) {
+            reset(Rotation2d.fromDegrees(Constants.kHardMaxTurretAngle));
+            System.out.println("Turret max");
+            return true;
+        } else if (getReverseLimitSwitch()) {
+            reset(Rotation2d.fromDegrees(Constants.kHardMinTurretAngle));
+            System.out.println("Turret min");
+            return true;
+        }else return false;
     }
 
     public synchronized boolean getForwardLimitSwitch() {
@@ -142,6 +218,6 @@ public class Turret extends Subsystem {
 
     @Override
     public void registerEnabledLoops(Looper in) {
-        //in.register(mLoop);
+        in.register(mLoop);
     }
 }
