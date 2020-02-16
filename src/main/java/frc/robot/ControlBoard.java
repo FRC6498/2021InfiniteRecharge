@@ -67,6 +67,13 @@ public class ControlBoard {
        return mDriver.getBumper(Hand.kRight);
    }
 
+   public boolean getIntake(){
+       return mDriver.getPOV()==0;
+   }
+   public boolean getStopIntake(){
+       return mDriver.getPOV()==180;
+   }
+
    //OPERATOR CONTROLS
 
    public double getTurretManual() {

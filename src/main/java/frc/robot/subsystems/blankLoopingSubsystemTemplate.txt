@@ -1,0 +1,91 @@
+package frc.robot.subsystems;
+
+import frc.lib.util.ContinuousRotationServo;
+import frc.robot.loops.Loop;
+import frc.robot.loops.Looper;
+
+/**
+ 
+ */
+
+ 
+public class Indexer extends Subsystem {
+
+    
+  
+
+    private static Indexer instance_ = new Indexer();
+
+    public static Indexer getInstance() {
+        return instance_;
+    }
+
+
+   
+
+    
+
+    Loop mLoop = new Loop() {
+    
+        @Override
+        public void onLoop() {
+            synchronized (Indexer.this) {
+                
+        }
+     }
+
+        @Override
+        public void onStart() {
+            synchronized (Indexer.this) {
+               
+            }
+        }
+
+        @Override
+        public void onStop() {
+            synchronized (Indexer.this) {
+               
+            }
+        }
+    };
+
+    private Indexer() {
+        
+    }
+
+   
+
+  
+   
+    private synchronized void set(double power) {
+       
+    }
+
+
+
+   
+
+ 
+
+  
+
+    @Override
+    public void outputToSmartDashboard() {
+        
+    }
+
+    @Override
+    public synchronized void stop() {
+        set(0);
+    }
+
+    @Override
+    public synchronized void zeroSensors() {
+     
+    }
+    
+    @Override
+    public void registerEnabledLoops(Looper in) {
+        in.register(mLoop);
+    }
+}

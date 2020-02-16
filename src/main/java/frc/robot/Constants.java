@@ -82,9 +82,33 @@ public class Constants {
     public static double kShootActuationTime = 0.75;
 
 
+    //Indexer Constants
+    public static double kIndexRampRate = .1;
+    public static double kIndexOnlySpeed = .2;
+    public static double kIndexandBeltSpeed = .2;
+    
+    //Feeder Belt Constatns
+    public static double kFeederBeltRampRate=.1;
+    public static double kFeederBeltLoadingSpeed=.2;
+    public static double kFeederBeltDeployingSpeed=1;
 
-   
-  
+    //Feeder Flywheel Constatns
+    public static double kFeederFlywheelShootRPM = 3000;
+    public static double kFeederFlywheelActuationTime = 1.5;
+
+    //Intake Constatns
+    public static double kIntakeGroundSpeed = .2;
+    public static double kIntakeGroundCurrentThreshold = 40;
+    public static double kIntakeGroundTimeThreshold = .3;
+    
+    //Belt Clamp Constants
+    public static double kBeltClampConveySpeed=.2;
+    public static double kBeltClampAgitationPeriod = 1;
+    public static double kBeltClampAgitationTime = 3;
+    public static double kBeltClampAgitationSpeed = .2;
+    public static double kBeltClampConveyTimeout = 5;
+
+     
 
     public static double kLooperDt = 0.01;
 
@@ -147,8 +171,18 @@ public class Constants {
     public static double kFlywheelKd = 0.5;
     public static double kFlywheelKf = 0.014;
     public static int kFlywheelIZone = (int) (1023.0 / kFlywheelKp);
-    public static double kFlywheelRampRate = 0;
+    public static double kFlywheelRampRate = .1;
     public static int kFlywheelAllowableError = 0;
+
+    // PID gains for feeder flywheel velocity loop
+    // Units: error is (4096 counts/rev)/100ms. Max output is +/- 1023 units.
+    public static double kFeederFlywheelKp = 0.12;
+    public static double kFeederFlywheelKi = 0.0;
+    public static double kFeederFlywheelKd = 0.5;
+    public static double kFeederFlywheelKf = 0.014;
+    public static int kFeederFlywheelIZone = (int) (1023.0 / kFlywheelKp);
+    public static double kFeederFlywheelRampRate = .1;
+    public static int kFeederFlywheelAllowableError = 0;
 
    
     //Auto alignment with Load Station
@@ -156,7 +190,8 @@ public class Constants {
     public static double kCameraAngle = 30;
     public static double kTargetHeight = 16.5;
     public static double kDistanceToBumber = 0;
-   
+
+    
 
    
    
@@ -168,40 +203,46 @@ public class Constants {
     // are attached to the master)
     // Motors
    
-    public static final int kLeftDriveMasterId = 1;
-    public static final int kLeftDriveChildId = 2;
+    public static final int kLeftDriveMasterId = 3;
+    public static final int kLeftDriveChildId = 4;
    
-    public static final int kRightDriveMasterId = 3;
-    public static final int kRightDriveChildId = 4;
+    public static final int kRightDriveMasterId = 1;
+    public static final int kRightDriveChildId = 2;
 
-    //public static final int kLeftEncoderId =1;
-    //public static final int kRightEncoderId = 2;
 
-    public static final int kTurretTalonId = 10;
+    public static final int kTurretFalconId = 10;
 
-    public static final int kFlyWheelNeoId = 11;
+    public static final int kFlyWheelNeoId = 14;
+
+    public static int kIndexFalconId = 12;
+
+    public static int kFeederBeltVictorId = 7;
+
+    public static int kFeederFlywheelNeoId = 15;
+
+    public static int kIntakeTalonId = 5;
+
+    public static int kBeltClampVictorId = 8;
    
 
     // SOLENOIDS
     public static final int shiftSolenoidId = 3;
+    public static final int intakeSolenoidId = 0;
+    public static final int beltClampSolenoidId = 2;
 
     // Analog Inputs
     public static final int kHoodEncoderAnalog = 0;
 
-    /**
-     * Make an {@link Solenoid} instance for the single-number ID of the
-     * solenoid
-     * 
-     * @param solenoidId
-     *            One of the kXyzSolenoidId constants
-     */
-    public static Solenoid makeSolenoidForId(int solenoidId) {
-        return new Solenoid(solenoidId / 8, solenoidId % 8);
-    }
-
+    
     // DIGITAL IO
    
     public static final int kHoodServoPWM = 0;
+
+    public static final int kIndexSensorPort = 0;
+
+    public static final int kFeederBeltSensorPort = 1;
+
+    
     
    
 

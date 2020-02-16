@@ -95,6 +95,8 @@ public class RobotState {
         goal_track = new GoalTrack(0, new Translation2d());
        
         differential_height_ = Constants.kCenterOfTargetHeight - Constants.kCameraZOffset;
+
+        //totalNumberBallsCounted=0;
     }
 
     public synchronized RigidTransform2d getFieldToVehicle(double timestamp) {
@@ -223,6 +225,47 @@ public class RobotState {
                 right_encoder_delta_distance, current_gyro_angle);
     }
 
+
+
+
+    
+    private int totalBallsInFeeder=0;
+    private int totalBallsInBelt=0;
+
+    public synchronized int getTotalBalls(){
+        return totalBallsInFeeder+totalBallsInBelt;
+    }
+
+    public synchronized void setIntakeBalls(int number){
+        totalBallsInBelt+=number;
+    }
+
+    public synchronized void setFeederBalls(int number){
+        totalBallsInFeeder+=number;
+    }
+
+    public synchronized int getFeederBalls(){
+        return totalBallsInFeeder;
+    }
+
+    public synchronized int getBeltBalls(){
+        return totalBallsInBelt;
+    }
+
+    public synchronized void fillBalls(){
+        totalBallsInBelt = 5-getFeederBalls();
+    }
+
+    public synchronized int ballsNeeded(){
+        return 5-getTotalBalls();
+    }
+
+    
+
+
+
+
+
     public void outputToSmartDashboard() {
         RigidTransform2d odometry = getLatestFieldToVehicle().getValue();
         SmartDashboard.putNumber("robot_pose_x", odometry.getTranslation().getX());
@@ -233,6 +276,9 @@ public class RobotState {
             // Only output first goal
            SmartDashboard.putNumber("goal_pose_x", pose.getTranslation().getX());
             SmartDashboard.putNumber("goal_pose_y", pose.getTranslation().getY());
+
+        SmartDashboard.putNumber("belt balls", getBeltBalls());
+        SmartDashboard.putNumber("feeder balls", getFeederBalls());
         
     }
 }

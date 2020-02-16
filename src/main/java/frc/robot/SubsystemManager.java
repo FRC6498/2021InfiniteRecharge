@@ -16,6 +16,10 @@ public class SubsystemManager {
         mAllSubsystems = allSubsystems;
     }
 
+    public List<Subsystem> getSubsystems(){
+        return mAllSubsystems;
+    }
+
     public void outputToSmartDashboard() {
         mAllSubsystems.forEach((s) -> s.outputToSmartDashboard());
     }

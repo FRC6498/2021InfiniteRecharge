@@ -51,6 +51,8 @@ public class RobotStateEstimator implements Loop {
         robot_state_.addObservations(time, odometry, turret_angle, velocity);
         left_encoder_prev_distance_ = left_distance;
         right_encoder_prev_distance_ = right_distance;
+
+        //TODO: ball counter
     }
 
     @Override

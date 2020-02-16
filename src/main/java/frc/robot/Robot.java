@@ -1,6 +1,7 @@
 package frc.robot;
 
 import java.util.Arrays;
+import java.util.List;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -14,8 +15,8 @@ import frc.robot.auto.AutoModeExecuter;
 import frc.robot.loops.Looper;
 import frc.robot.loops.RobotStateEstimator;
 import frc.robot.loops.VisionProcessor;
-import frc.robot.subsystems.Drive;
-import frc.robot.subsystems.Turret;
+import frc.robot.subsystems.*;
+
 
 /**
  * The main robot class, which instantiates all robot parts and helper classes.
@@ -39,6 +40,9 @@ public class Robot extends TimedRobot {
     AutoModeExecuter mAutoModeExecuter = null;
 
    Shooter mShooter = Shooter.getInstance();
+   Intake mIntake = Intake.getInstance();
+   Flywheel mFlywheel = Flywheel.getInstance();
+   FeederFlywheel mFeederFlywheel = FeederFlywheel.getInstance();
 
     // Other parts of the robot
     CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
@@ -46,10 +50,10 @@ public class Robot extends TimedRobot {
 
     RobotState mRobotState = RobotState.getInstance();
 
-
+        List<Subsystem> subsystemsList = Arrays.asList(Drive.getInstance(), mFlywheel, 
+        /*Hood.getInstance(), Turret.getInstance(), mShooter,*/ mIntake, BeltClamp.getInstance(), Indexer.getInstance(), FeederBelt.getInstance(), mFeederFlywheel);
        // Create subsystem manager
-       private final SubsystemManager mSubsystemManager = new SubsystemManager(Arrays.asList(Drive.getInstance(), /*Flywheel.getInstance(), 
-       Hood.getInstance(), */Turret.getInstance(), mShooter));
+       private final SubsystemManager mSubsystemManager = new SubsystemManager(subsystemsList);
    
     // Enabled looper is called at 100Hz whenever the robot is enabled
     Looper mEnabledLooper = new Looper();
@@ -277,6 +281,9 @@ public class Robot extends TimedRobot {
                 mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControls.getQuickTurn()));
             }
             
+
+            if(mControls.getIntake()) mIntake.setWantedState(Intake.WantedState.WANT_INTAKE_GROUND);
+            else if(mControls.getStopIntake()) mIntake.setWantedState(Intake.WantedState.WANT_IDLE);
             
 
             if (mControls.getAutoAimNewBalls()) {
@@ -304,6 +311,8 @@ public class Robot extends TimedRobot {
                 mShooter.setTuningMode(false);
             }
 
+
+
            allPeriodic();
      
         } catch (Throwable t) {
@@ -323,11 +332,20 @@ public class Robot extends TimedRobot {
         }
     }
 
-    
+   
+    int period = 0;
+    @Override
+    public void testInit() {
+        period=0;
+    }
   
     @Override
     public void testPeriodic() {
-      
+        if(period<subsystemsList.size()){
+        Subsystem system = subsystemsList.get(period);
+
+        if(system.test(Timer.getFPGATimestamp())) period++;
+        }
     }
 
   /**

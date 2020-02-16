@@ -402,4 +402,13 @@ public class Shooter extends Subsystem {
     public void registerEnabledLoops(Looper in) {
         in.register(mLoop);
     }
+
+
+    double startTestTime=0;
+    @Override
+    public boolean test(double now) {
+        
+
+        return true;
+    }
 }

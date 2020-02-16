@@ -27,4 +27,6 @@ public abstract class Subsystem {
     public abstract void zeroSensors();
 
     public abstract void registerEnabledLoops(Looper enabledLooper);
+
+    public abstract boolean test(double now);
 }

@@ -49,7 +49,7 @@ public class Flywheel extends Subsystem {
        
         pid_ = neo_.getPIDController();
   
-        pid_.setP(Constants.kFlywheelKp);
+       /* pid_.setP(Constants.kFlywheelKp);
         pid_.setI(Constants.kFlywheelKi);
         pid_.setD(Constants.kFlywheelKd);
         pid_.setFF(Constants.kFlywheelKf);
@@ -57,7 +57,7 @@ public class Flywheel extends Subsystem {
         neo_.setClosedLoopRampRate(Constants.kFlywheelRampRate);
         neo_.setOpenLoopRampRate(Constants.kFlywheelRampRate);
 
-        neo_.setIdleMode(IdleMode.kCoast);
+        neo_.setIdleMode(IdleMode.kCoast);*/
 
     }
 
@@ -115,5 +115,31 @@ public class Flywheel extends Subsystem {
     @Override
     public void registerEnabledLoops(Looper in) {
         //in.register(mLoop);
+    }
+
+
+    double startTestTime=0;
+    @Override
+    public boolean test(double now) {
+        if(startTestTime==0){
+            startTestTime = now;
+        }
+
+        double timeElapsed = now-startTestTime;
+
+        if(timeElapsed<3){
+           
+            setRpm(Constants.kFlywheelGoodBallRpmSetpoint);
+        }else if(!isOnTarget()){
+
+        
+        }else{
+            stop();
+            startTestTime=0;
+            return true;
+        }
+
+
+        return false;
     }
 }

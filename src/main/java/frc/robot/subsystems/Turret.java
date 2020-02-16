@@ -81,7 +81,7 @@ public class Turret extends Subsystem {
 
     private Turret() {
         // The turret has one Talon.
-        falcon_ = new TalonFX(Constants.kTurretTalonId);
+        falcon_ = new TalonFX(Constants.kTurretFalconId);
         falcon_.setNeutralMode(NeutralMode.Brake);
         falcon_.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector,LimitSwitchNormal.NormallyOpen);
   
@@ -219,5 +219,14 @@ public class Turret extends Subsystem {
     @Override
     public void registerEnabledLoops(Looper in) {
         in.register(mLoop);
+    }
+
+
+    double startTestTime=0;
+    @Override
+    public boolean test(double now) {
+        
+
+        return true;
     }
 }
