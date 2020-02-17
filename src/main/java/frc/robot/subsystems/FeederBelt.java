@@ -48,6 +48,8 @@ public class FeederBelt extends Subsystem {
 
                 if(needsBall()&&(mIndexer.hasBall()||mIndexer.getMoving())){
                     set(Constants.kFeederBeltLoadingSpeed);
+                }else if(needsBall()){
+                    set(0);
                 }else if(FeederFlywheel.getInstance().needsBall()){
                     set(Constants.kFeederBeltDeployingSpeed);
                 }else{
@@ -95,11 +97,11 @@ public class FeederBelt extends Subsystem {
     }
 
     public synchronized boolean hasBall(){
-        return mHasBall;
+        return getRawSensor();
     }
 
     public synchronized boolean needsBall(){
-        return !mHasBall;
+        return !getRawSensor();
     }
 
     private boolean mStartedFeeding=false;

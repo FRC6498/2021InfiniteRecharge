@@ -55,7 +55,7 @@ public class Hood extends Subsystem {
 
     Loop mLoop = new Loop() {
         static final double kHomingTimeSeconds = 1.0;
-        ControlMode last_iteration_control_mode_ = ControlMode.HOMING;
+        ControlMode last_iteration_control_mode_ = ControlMode.POSITION;
         double homing_start_time_ = 0;
 
         @Override
@@ -69,7 +69,7 @@ public class Hood extends Subsystem {
                         stopHoming(true);
                     }
                 } else if (control_mode_ == ControlMode.POSITION) {
-                    set(pid_.calculate(getAngle().getDegrees()));
+                    set(pid_.calculate(getAngle()));
                 }
                 last_iteration_control_mode_ = control_mode_;
             }
@@ -81,6 +81,7 @@ public class Hood extends Subsystem {
                 if (!has_homed_) {
                     control_mode_ = ControlMode.HOMING;
                 }
+                pid_.setSetpoint(Constants.kHoodNeutralAngle);
             }
         }
 
@@ -96,15 +97,20 @@ public class Hood extends Subsystem {
 
     private Hood() {
         servo_ = new ContinuousRotationServo(Constants.kHoodServoPWM);
+
+        
  
         encoder_ = new MA3AnalogEncoder(Constants.kHoodEncoderAnalog);
+
+        
+
         pid_ = new SynchronousPID(Constants.kHoodKp, Constants.kHoodKi, Constants.kHoodKd);
         pid_.setDeadband(Constants.kHoodDeadband);
         pid_.setInputRange(Constants.kMinHoodAngle, Constants.kMaxHoodAngle);
         
 
         has_homed_ = false;
-        pid_.setSetpoint(Constants.kMinHoodAngle);
+        pid_.setSetpoint(Constants.kHoodNeutralAngle);
         control_mode_ = ControlMode.OPEN_LOOP;
     }
 
@@ -129,13 +135,12 @@ public class Hood extends Subsystem {
      * 
      * @return The hood's current angle.
      */
-    public synchronized Rotation2d getAngle() {
-        return Rotation2d.fromDegrees(
-                encoder_.getContinuousAngleDegrees() * Constants.kHoodGearReduction + Constants.kMinHoodAngle);
+    public synchronized double getAngle() {
+        return -encoder_.getContinuousAngleDegrees() * 20 / 564+ Constants.kMinHoodAngle;
     }
 
     private synchronized void set(double power) {
-        servo_.set(power);
+        servo_.set(-power);
     }
 
     public synchronized void setOpenLoop(double power) {
@@ -157,7 +162,7 @@ public class Hood extends Subsystem {
      */
     synchronized void startHoming() {
         control_mode_ = ControlMode.HOMING;
-        set(-1.0);
+        set(-0.9);
     }
 
     /**
@@ -200,22 +205,23 @@ public class Hood extends Subsystem {
     @Override
     public void outputToSmartDashboard() {
         SmartDashboard.putBoolean("has_hood_homed", has_homed_);
-        SmartDashboard.putNumber("hood_angle", getAngle().getDegrees());
+        SmartDashboard.putNumber("hood_angle", getAngle());
         SmartDashboard.putNumber("hood_setpoint", pid_.getSetpoint());
         SmartDashboard.putBoolean("hood_on_target", isOnTarget());
-        SmartDashboard.putNumber("hood_error", pid_.getSetpoint() - getAngle().getDegrees());
+        SmartDashboard.putNumber("hood_error", pid_.getSetpoint() - getAngle());
     }
 
     @Override
     public synchronized void stop() {
         pid_.reset();
+        
         control_mode_ = ControlMode.OPEN_LOOP;
         set(0);
     }
 
     @Override
     public synchronized void zeroSensors() {
-        encoder_.zero();
+        //encoder_.zero();
     }
     
     @Override

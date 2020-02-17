@@ -74,6 +74,8 @@ public class BeltClamp extends Subsystem {
     private SystemState mSystemState = SystemState.IDLE;
     private WantedState mWantedState = WantedState.WANT_IDLE;
     private boolean mStateChanged;
+
+    private double ballFromIntakeTime=0;
     
     Loop mLoop = new Loop() {
         private double mCurrentStateStartTime;
@@ -101,29 +103,29 @@ public class BeltClamp extends Subsystem {
 
 
 
-                if(!mIntake.getIntakeDown()){ //not intaking
+                if(!Intake.getInstance().getIntakeDown()){ //not intaking
 
                     
-                    if(indexerNeedsBall()){ //indexer needs ball
-                       // if(mRobotState.getFeederBalls()>0){ //ball available to convey
+                    if(Indexer.getInstance().getMoving()){ //indexer needs ball
+                        if(mRobotState.getFeederBalls()>0){ //ball available to convey
                             mWantedState = WantedState.WANT_CONVEY;
-                       // }
+                        }
                     }else{
                         mWantedState = WantedState.WANT_IDLE;
                     }
 
                    
-
+                    ballFromIntakeTime=0;
                 } else{ //intaking
 
-                    if(mRobotState.getFeederBalls()>=3){ //belt is full right now, should probaly fill
+                    if(RobotState.getInstance().getBeltBalls()>=2&&RobotState.getInstance().getFeederBalls()<2){ //belt is full right now, should probaly fill
                         
-                        if(indexerNeedsBall()){ //indexer needs ball
-                           
-                            mWantedState = WantedState.WANT_CONVEY;
-                        }
+                            if(ballFromIntakeTime==0) ballFromIntakeTime=now;
+                            else if(now-ballFromIntakeTime>=Constants.kBeltClampIntakeClampTime) mWantedState = WantedState.WANT_CONVEY;
+                        
                     }else{
                         mWantedState = WantedState.WANT_AGITATING;
+                        ballFromIntakeTime=0;
                     }
 
                    
@@ -144,6 +146,7 @@ public class BeltClamp extends Subsystem {
                     break;
                 case AGITATING:
                     newState = handleAgitating(now, mCurrentStateStartTime);
+                    break;
                 default:
                     System.out.println("Unexpected BeltClamp state: " + mSystemState);
                     newState = SystemState.IDLE;
@@ -172,9 +175,7 @@ public class BeltClamp extends Subsystem {
     
     
     
-    private synchronized boolean indexerNeedsBall(){
-        return Indexer.getInstance().needsBall();
-    }
+   
     
     
     private synchronized SystemState handleIdle(){
@@ -202,17 +203,17 @@ public class BeltClamp extends Subsystem {
 
         boolean timedOut=false;
 
-        if(now-stateStartTime>=Constants.kBeltClampConveyTimeout) { //timed out, start agitating
-            timedOut=true;
-        }
+       // if(now-stateStartTime>=Constants.kBeltClampConveyTimeout) { //timed out, start agitating
+      //      timedOut=true;
+      //  }
 
 
         switch(mWantedState){
+            case WANT_AGITATING:
+                return SystemState.AGITATING;
             case WANT_CONVEY:
                 if(timedOut) return SystemState.AGITATING;
                 else return SystemState.CONVEYING;
-            case WANT_AGITATING:
-                return SystemState.AGITATING;
             default:
                 return SystemState.IDLE;
         }

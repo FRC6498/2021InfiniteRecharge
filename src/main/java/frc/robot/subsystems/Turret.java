@@ -98,6 +98,14 @@ public class Turret extends Subsystem {
         falcon_.configClosedloopRamp(Constants.kTurretRampRate);
         falcon_.configOpenloopRamp(Constants.kTurretRampRate);
 
+        falcon_.configPeakOutputReverse(-Constants.kTurretMaxPercentOut);
+        falcon_.configPeakOutputForward(Constants.kTurretMaxPercentOut);
+
+        falcon_.configNominalOutputForward(0);
+        falcon_.configNominalOutputReverse(0);
+
+        falcon_.configAllowableClosedloopError(0, Constants.kTurretAllowableError);
+
         
       //  falcon_.sensorre(true);
 
@@ -117,8 +125,8 @@ public class Turret extends Subsystem {
     
     private synchronized void startHoming(){
         has_homed_=false;
-            setOpenLoop(-.2);
-            falcon_.overrideSoftLimitsEnable(true);
+            setOpenLoop(-.12);
+            falcon_.overrideSoftLimitsEnable(false);
     }
 
     private synchronized void handleHoming(){
@@ -126,7 +134,7 @@ public class Turret extends Subsystem {
         if(checkLimits()){
             setOpenLoop(0);
             has_homed_=true;
-            falcon_.overrideSoftLimitsEnable(false);
+            falcon_.overrideSoftLimitsEnable(true);
             setDesiredAngle(Rotation2d.fromDegrees(0));
         }
 
@@ -213,7 +221,7 @@ public class Turret extends Subsystem {
 
     @Override
     public void zeroSensors() {
-        reset(new Rotation2d());
+       // reset(new Rotation2d());
     }
 
     @Override

@@ -45,7 +45,7 @@ public class Intake extends Subsystem {
 
         mTalon.setNeutralMode(NeutralMode.Coast);
 
-        mTalon.setInverted(false);
+        mTalon.setInverted(true);
 
         mSolenoid = new Solenoid(Constants.intakeSolenoidId);
         mSolenoid.set(false);
@@ -89,7 +89,7 @@ public class Intake extends Subsystem {
                     newState = handleIdle();
                     break;
                 case INTAKE_GROUND:
-                    newState = handleIntakeGround(now);
+                    newState = handleIntakeGround(now, mCurrentStateStartTime);
                     break;
                 case INTAKE_LOAD:
                     newState = handleIntakeLoad(now);
@@ -144,31 +144,34 @@ public class Intake extends Subsystem {
     }
 
     private double ballSeenStartTime=0;
-    private synchronized SystemState handleIntakeGround(double now){
+    private double actuationStartTime=0;
+    private synchronized SystemState handleIntakeGround(double now, double startTime){
 
         if(mStateChanged){
             mSolenoid.set(true);
            setOpenLoop(Constants.kIntakeGroundSpeed);
         }
 
-        if(ballSeenStartTime==0&&getCurrent()>=Constants.kIntakeGroundCurrentThreshold ){
-            ballSeenStartTime=now;
-            System.out.println("Intake start detection");
-        }else if(ballSeenStartTime!=0){
+        if(now-startTime>=Constants.kIntakeActuationTime){
 
-            if(getCurrent()>Constants.kIntakeGroundCurrentThreshold) {
-                ballSeenStartTime=0;
-                System.out.println("Intake ball lost");
-            }else if(now-ballSeenStartTime>=Constants.kIntakeGroundTimeThreshold){
-                System.out.println("Intaked ball");
-                ballSeenStartTime=0;
+            if(ballSeenStartTime==0&&getCurrent()>=Constants.kIntakeGroundCurrentThreshold ){
+                ballSeenStartTime=now;
+            //  System.out.println("Intake ball detected");
                 mRobotState.setIntakeBalls(1);
-            }
-        }
 
-        if(mRobotState.getTotalBalls()>=5){
+            }else if(now-ballSeenStartTime>=Constants.kIntakeGroundTimeThreshold){
+                ballSeenStartTime = 0;
+
+            }
+       
+        }
+            
+        if(actuationStartTime!=0&&now-actuationStartTime>=Constants.kIntakeActuationTime){
             if(mWantedState==WantedState.WANT_INTAKE_GROUND) mWantedState=WantedState.WANT_IDLE;
             System.out.println("Intake reached max balls");
+        }else if(actuationStartTime!=0){
+        }else if(mRobotState.getTotalBalls()>=5){
+            actuationStartTime=now;
         }
 
         switch(mWantedState){

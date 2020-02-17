@@ -50,9 +50,12 @@ public class Indexer extends Subsystem {
         public void onLoop() {
             synchronized (Indexer.this) {
 
+                
 
                 if(hasBall()&&FeederBelt.getInstance().needsBall()){
                     set(Constants.kIndexandBeltSpeed);
+                }else if(RobotState.getInstance().getBeltBalls()==0){
+                    set(0);
                 }else if(needsBall()/*&&mBeltClamp.getConveying()*/){
                     set(Constants.kIndexOnlySpeed);
                 }else{
@@ -111,7 +114,7 @@ public class Indexer extends Subsystem {
     }
 
     public synchronized boolean hasBall(){
-        return mHasBall;
+        return mSensor.get();
     }
 
     public  synchronized boolean needsBall(){

@@ -51,7 +51,7 @@ public class Robot extends TimedRobot {
     RobotState mRobotState = RobotState.getInstance();
 
         List<Subsystem> subsystemsList = Arrays.asList(Drive.getInstance(), mFlywheel, 
-        /*Hood.getInstance(), Turret.getInstance(), mShooter,*/ mIntake, BeltClamp.getInstance(), Indexer.getInstance(), FeederBelt.getInstance(), mFeederFlywheel);
+        Hood.getInstance(), Turret.getInstance(), mShooter, mIntake, BeltClamp.getInstance(), Indexer.getInstance(), FeederBelt.getInstance(), mFeederFlywheel);
        // Create subsystem manager
        private final SubsystemManager mSubsystemManager = new SubsystemManager(subsystemsList);
    
@@ -167,7 +167,7 @@ public class Robot extends TimedRobot {
             
             mShooter.setHoodAdjustment(mSmartDashboardInteractions.areAutoBallsWorn()
             ? Constants.kOldBallHoodAdjustment : Constants.kNewBallHoodAdjustment);
-            c.start();
+         //   c.start();
            
             mEnabledLooper.start();
 
@@ -192,7 +192,8 @@ public class Robot extends TimedRobot {
             // Reset drive
             mDrive.resetEncoders();
 
-           c.start();
+           
+         //  c.start();
 
            zeroAllSensors();
 
