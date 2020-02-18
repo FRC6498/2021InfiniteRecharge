@@ -48,7 +48,7 @@ public class ControlBoard {
     }
 
     public double getTurn() {
-        return -mDriver.getX(Hand.kLeft);
+        return mDriver.getX(Hand.kLeft);
     }
 
     public boolean getQuickTurn() {
@@ -87,11 +87,19 @@ public class ControlBoard {
 }
 
     public boolean getAutoAimNewBalls() {
-        return mOperator.getAButton();
+        return mOperator.getYButton();
     }
 
     public boolean getAutoAimOldBalls() {
+        return mOperator.getXButton();
+    }
+
+    public boolean getShooterOpenLoop() {
         return mOperator.getBButton();
+    }
+
+    public boolean getShooterFireOneWhenReady(){
+        return mOperator.getAButton();
     }
 
     public boolean getHoodTuningPositiveButton() {
@@ -100,6 +108,15 @@ public class ControlBoard {
 
     public boolean getHoodTuningNegativeButton() {
         return mOperator.getPOV()==0;
+    }
+
+    public boolean addBeltBall(){
+        return mOperator.getBumperPressed(Hand.kRight);
+    }
+
+    public boolean subtractBeltBall(){
+        return mOperator.getBumperPressed(Hand.kLeft);
+       
     }
     
 

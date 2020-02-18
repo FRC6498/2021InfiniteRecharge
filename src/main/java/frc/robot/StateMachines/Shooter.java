@@ -15,6 +15,7 @@ import frc.robot.Vision.TurretCam.LightMode;
 import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
 import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.FeederFlywheel;
 import frc.robot.subsystems.Flywheel;
 import frc.robot.subsystems.Hood;
 import frc.robot.subsystems.ShooterAimingParameters;
@@ -39,6 +40,8 @@ public class Shooter extends Subsystem {
 
     static Shooter mInstance = new Shooter();
 
+    
+
     public static Shooter getInstance() {
         return mInstance;
     }
@@ -50,7 +53,7 @@ public class Shooter extends Subsystem {
         IDLE, //move to center and retract hood
         AUTO_AIM, //automatically aims when in range
         UNJAMMING, //ifits jammed, get the balls out
-        //OPEN_LOOP
+        OPEN_LOOP
     }
 
     /**
@@ -58,13 +61,31 @@ public class Shooter extends Subsystem {
      */
     public enum WantedState {
         WANT_AUTO,
-        //WANT_OPEN,
+        WANT_OPEN_LOOP,
         WANT_UNJAM,
         WANT_IDLE
     }
 
+     /**
+     * Orthogonal to the shooter state is the state of the firing mechanism.
+     * Outputs should not be decided based on this enum.
+     */
+    public enum WantedFiringState {
+        WANT_TO_HOLD_FIRE, // The user does not wish to fire
+        WANT_TO_FIRE_NOW, // The user wants to fire now, regardless of readiness
+        WANT_TO_FIRE_WHEN_READY // The user wants to fire as soon as we achieve
+                                // readiness
+    }
+
+    public enum WantedFiringAmount{
+        WANT_FIRE_ONE,
+        WANT_FIRE_CONTINUOUS
+    }
+
 
     private WantedState mWantedState = WantedState.WANT_IDLE;
+    private WantedFiringState mWantedFiringState = WantedFiringState.WANT_TO_HOLD_FIRE;
+    private WantedFiringAmount mWantedFiringAmount = WantedFiringAmount.WANT_FIRE_ONE;
    
     private double mCurrentRangeForLogging;
     private double mCurrentAngleForLogging;
@@ -108,7 +129,7 @@ public class Shooter extends Subsystem {
                
                 
                 mWantedState = WantedState.WANT_IDLE;
-               
+                mWantedFiringState = WantedFiringState.WANT_TO_HOLD_FIRE;
                 mCurrentStateStartTime = Timer.getFPGATimestamp();
                 mSystemState = SystemState.IDLE;
                 mStateChanged = true;
@@ -132,6 +153,9 @@ public class Shooter extends Subsystem {
                 case UNJAMMING:
                     newState = handleUnjamming();
                     break;
+                case OPEN_LOOP:
+                    newState = handleOpenLoop();
+                    break;
                 default:
                     System.out.println("Unexpected shooter state: " + mSystemState);
                     newState = SystemState.IDLE;
@@ -145,6 +169,18 @@ public class Shooter extends Subsystem {
                 } else {
                     mStateChanged = false;
                 }
+
+
+              if(mWantedFiringState==WantedFiringState.WANT_TO_FIRE_WHEN_READY&&readyToFire(now)
+                                        ||mWantedFiringState==WantedFiringState.WANT_TO_FIRE_NOW
+                                        &&RobotState.getInstance().getTotalBalls()>0){
+                  if(mWantedFiringAmount==WantedFiringAmount.WANT_FIRE_ONE){
+                      mWantedFiringState=WantedFiringState.WANT_TO_HOLD_FIRE;
+                      FeederFlywheel.getInstance().setWantedState(FeederFlywheel.WantedState.WANT_FEED_ONE);
+                  }else{
+                    FeederFlywheel.getInstance().setWantedState(FeederFlywheel.WantedState.WANT_FEED_CONTINUOUS);
+                  }
+              }
                
                 //mHoodRoller.getLoop().onLoop();
             }
@@ -166,6 +202,19 @@ public class Shooter extends Subsystem {
 
     public synchronized void setWantedState(WantedState newState) {
         mWantedState = newState;
+    }
+    public synchronized void setWantsToFireNow(WantedFiringAmount amount) {
+        mWantedFiringState = WantedFiringState.WANT_TO_FIRE_NOW;
+        mWantedFiringAmount = amount;
+    }
+
+    public synchronized void setWantsToFireWhenReady(WantedFiringAmount amount) {
+        mWantedFiringState = WantedFiringState.WANT_TO_FIRE_WHEN_READY;
+        mWantedFiringAmount = amount;
+    }
+
+    public synchronized void setWantsToHoldFire() {
+        mWantedFiringState = WantedFiringState.WANT_TO_HOLD_FIRE;
     }
 
     @Override
@@ -253,6 +302,8 @@ public class Shooter extends Subsystem {
                 return SystemState.AUTO_AIM;
             case WANT_UNJAM:
                 return SystemState.UNJAMMING;            
+            case WANT_OPEN_LOOP:
+                return SystemState.OPEN_LOOP;    
             default:
                 return SystemState.IDLE;
         }
@@ -265,7 +316,41 @@ public class Shooter extends Subsystem {
             case WANT_AUTO:
                 return SystemState.AUTO_AIM;
             case WANT_UNJAM:
-                return SystemState.UNJAMMING;            
+                return SystemState.UNJAMMING;       
+            case WANT_OPEN_LOOP:
+                return SystemState.OPEN_LOOP;       
+            default:
+                return SystemState.IDLE;
+        }
+    }
+
+    private synchronized SystemState handleOpenLoop(){
+        if(mStateChanged){
+            TurretCam.setCameraMode(CameraMode.eDriver);
+            TurretCam.setLedMode(LightMode.eOff);
+        }
+    
+       
+                // Manual search
+                if (mTurretManualSetpoint != null) {
+                    mTurret.setDesiredAngle(mTurretManualSetpoint.getTurretAngle());
+                   mHood.setDesiredAngle(Rotation2d.fromDegrees(getHoodAngleForRange(mTurretManualSetpoint.range)));
+                } else {
+                    mTurret.setOpenLoop(mTurretManualScanOutput);
+                   
+                    mHood.setOpenLoop(mHoodManualScanOutput);
+                    
+                }
+                mFlywheel.setRpm(Constants.kFlywheelGoodBallRpmSetpoint);
+                
+
+        switch(mWantedState){
+            case WANT_AUTO:
+                return SystemState.AUTO_AIM;
+            case WANT_UNJAM:
+                return SystemState.UNJAMMING;       
+            case WANT_OPEN_LOOP:
+                return SystemState.OPEN_LOOP;     
             default:
                 return SystemState.IDLE;
         }
@@ -294,7 +379,7 @@ public class Shooter extends Subsystem {
                    mHood.setOpenLoop(mHoodManualScanOutput);
                 }
             }
-            //mFlywheel.setRpm(Constants.kFlywheelGoodBallRpmSetpoint);
+            mFlywheel.setRpm(Constants.kFlywheelGoodBallRpmSetpoint);
             has_target = false;
         } else {
             // Pick the target to aim at
@@ -323,6 +408,8 @@ public class Shooter extends Subsystem {
                     has_target = true;
                     //break;
                 //}
+
+              
             }
           //  if (!has_target) {
            //     mCurrentTrackId = -1;
@@ -334,6 +421,8 @@ public class Shooter extends Subsystem {
                 return SystemState.AUTO_AIM;
             case WANT_UNJAM:
                 return SystemState.UNJAMMING;            
+            case WANT_OPEN_LOOP:
+                return SystemState.OPEN_LOOP;
             default:
                 return SystemState.IDLE;
         }
@@ -384,13 +473,13 @@ public class Shooter extends Subsystem {
             } else {
                 mConsecutiveCyclesOnTarget = 0;
             }
-        } /*else if (state == SystemState.OPEN_LOOP) {
-            if ((mTuningMode || mHood.isOnTarget()) && mFlywheel.isOnTarget() && mTurret.isOnTarget()) {
+        } else if (mSystemState == SystemState.OPEN_LOOP) {
+            if (mFlywheel.isOnTarget()) {
                 mConsecutiveCyclesOnTarget++;
             } else {
                 mConsecutiveCyclesOnTarget = 0;
             }
-        } */else {
+        } else {
             mConsecutiveCyclesOnTarget = 0;
         }
         return mConsecutiveCyclesOnTarget > Constants.kAutoAimMinConsecutiveCyclesOnTarget && is_stopped;

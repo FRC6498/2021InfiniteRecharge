@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import frc.robot.Constants;
+import frc.robot.RobotState;
 import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
 
@@ -54,7 +55,7 @@ public class FeederFlywheel extends Subsystem {
     
     enum SystemState {IDLE, FEED_CONTINUOS, FEED_ONE, SPINNING_UP};
     
-    enum WantedState {WANT_IDLE, WANT_FEED_CONTINUOUS, WANT_FEED_ONE};
+    public enum WantedState {WANT_IDLE, WANT_FEED_CONTINUOUS, WANT_FEED_ONE};
 
     private WantedState mWantedState = WantedState.WANT_IDLE;
 
@@ -91,6 +92,10 @@ public class FeederFlywheel extends Subsystem {
                     break;
                 case FEED_ONE:
                     newState = handleFeedOne(now);
+                    break;
+                case SPINNING_UP:
+                    newState = handleSpinningUp();
+                    break;
                 default:
                     System.out.println("Unexpected feeder flywheel state: " + mSystemState);
                     newState = SystemState.IDLE;
@@ -148,8 +153,10 @@ public class FeederFlywheel extends Subsystem {
         switch(mWantedState){
             case WANT_FEED_CONTINUOUS:
                 if(isOnTarget())return SystemState.FEED_CONTINUOS;
+                else return SystemState.SPINNING_UP;
             case WANT_FEED_ONE:
                 if(isOnTarget())return SystemState.FEED_ONE;
+                else return SystemState.SPINNING_UP;
             case WANT_IDLE:
                 return SystemState.IDLE;
             default:
@@ -159,6 +166,10 @@ public class FeederFlywheel extends Subsystem {
 
     private synchronized SystemState handleFeedContinuous(){
         if(mStateChanged)mNeedsBall=true;
+
+        if(RobotState.getInstance().getTotalBalls()==0){
+            mWantedState= WantedState.WANT_IDLE;
+        }
 
         if(mWantedState!=WantedState.WANT_FEED_CONTINUOUS) mNeedsBall=false;
 
@@ -187,12 +198,13 @@ public class FeederFlywheel extends Subsystem {
 
 
         if(mBeltStartedFeeding&&mFeederBelt.needsBall()&&mFeederStartTime==0){
-        mNeedsBall=false;
+            mNeedsBall=false;
         mFeederStartTime = now;
         }
 
-        if(now-mFeederStartTime>=Constants.kFeederFlywheelActuationTime) {
+        if(mFeederStartTime!=0&&now-mFeederStartTime>=Constants.kFeederFlywheelActuationTime) {
             System.out.println("Fed One");
+            
             if(mWantedState==WantedState.WANT_FEED_ONE) mWantedState=WantedState.WANT_IDLE;
         }
 
@@ -200,8 +212,9 @@ public class FeederFlywheel extends Subsystem {
 
         switch(mWantedState){
             case WANT_FEED_CONTINUOUS:
-            case WANT_FEED_ONE:
                 return SystemState.SPINNING_UP;
+            case WANT_FEED_ONE:
+                return SystemState.FEED_ONE;
             default:
                 return SystemState.IDLE;
         }
@@ -243,7 +256,7 @@ public class FeederFlywheel extends Subsystem {
      *         point.
      */
     public synchronized boolean isOnTarget() {
-        return (Math.abs(getRpm() - getSetpoint()) < Constants.kFlywheelOnTargetTolerance);
+        return (Math.abs(getRpm() - getSetpoint()) < Constants.kFeederFlywheelOnTargetTolerance);
     }
 
     @Override

@@ -107,7 +107,7 @@ public class BeltClamp extends Subsystem {
 
                     
                     if(Indexer.getInstance().getMoving()){ //indexer needs ball
-                        if(mRobotState.getFeederBalls()>0){ //ball available to convey
+                        if(mRobotState.getBeltBalls()>0){ //ball available to convey
                             mWantedState = WantedState.WANT_CONVEY;
                         }
                     }else{

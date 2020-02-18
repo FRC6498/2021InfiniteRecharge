@@ -53,24 +53,24 @@ public class Constants {
     public static double kDriveRampRate=.3;
 
   
-     // Hood constants
-     public static double kMinHoodAngle = 45;//42.48;
-     public static double kMaxHoodAngle = 75.96;//71.42;
-     public static double kHoodNeutralAngle = 46.5;//42.5;
-     public static double kHoodOnTargetTolerance = 0.4;
-     //public static double kHoodGearReduction = 20/564; 
+    // Hood constants
+    public static double kMinHoodAngle = 45;//42.48;
+    public static double kMaxHoodAngle = 75.96;//71.42;
+    public static double kHoodNeutralAngle = 46.5;//42.5;
+    public static double kHoodOnTargetTolerance = 0.4;
+    //public static double kHoodGearReduction = 20/564; 
 
       // Turret constants
-    public static double kHardMaxTurretAngle = 135;
-    public static double kHardMinTurretAngle = -135;
-    public static double kSoftMaxTurretAngle = 134;
-    public static double kSoftMinTurretAngle = -134;
+    public static double kHardMaxTurretAngle = 135+13.35;
+    public static double kHardMinTurretAngle = -135-13.25;
+    public static double kSoftMaxTurretAngle = 134+13.35;
+    public static double kSoftMinTurretAngle = -134-13.25;
     public static double kTurretOnTargetTolerance = 0.8;
     public static double kTurretTicksPerRotation = (2048*(40/10)*(40/20)*(314/40));
 
     // Flywheel constants
     public static double kFlywheelOnTargetTolerance = 100.0;
-    public static double kFlywheelGoodBallRpmSetpoint = 4000;//6200
+    public static double kFlywheelGoodBallRpmSetpoint = 3000;//6200
     public static double kFlywheelBadBallRpmSetpoint = kFlywheelGoodBallRpmSetpoint;
 
     // Auto aiming/shooter constants
@@ -85,16 +85,17 @@ public class Constants {
     //Indexer Constants
     public static double kIndexRampRate = .1;
     public static double kIndexOnlySpeed = .5;
-    public static double kIndexandBeltSpeed = .5;
+    public static double kIndexandBeltSpeed = .8;
     
     //Feeder Belt Constatns
     public static double kFeederBeltRampRate=.1;
-    public static double kFeederBeltLoadingSpeed=.4;
+    public static double kFeederBeltLoadingSpeed=.6;
     public static double kFeederBeltDeployingSpeed=1;
 
     //Feeder Flywheel Constatns
     public static double kFeederFlywheelShootRPM = 3000;
-    public static double kFeederFlywheelActuationTime = 1.5;
+    public static double kFeederFlywheelActuationTime = 1;
+    public static double kFeederFlywheelOnTargetTolerance = 200;
 
     //Intake Constatns
     public static double kIntakeGroundSpeed = .55;
@@ -103,7 +104,7 @@ public class Constants {
     public static double kIntakeActuationTime = 1;
     
     //Belt Clamp Constants
-    public static double kBeltClampConveySpeed=.5;
+    public static double kBeltClampConveySpeed=.6;
     public static double kBeltClampAgitationPeriod = 1;
     public static double kBeltClampAgitationTime = 3;
     public static double kBeltClampAgitationSpeed = .2;
@@ -165,7 +166,7 @@ public class Constants {
     public static int kTurretIZone = (int) (1023.0 / kTurretKp);
     public static double kTurretRampRate = .1;
     public static int kTurretAllowableError = 80;
-    public static double kTurretMaxPercentOut = .6;
+    public static double kTurretMaxPercentOut = .4;
 
     // PID gains for flywheel velocity loop
     // Units: error is (4096 counts/rev)/100ms. Max output is +/- 1023 units.

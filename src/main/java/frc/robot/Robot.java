@@ -167,7 +167,7 @@ public class Robot extends TimedRobot {
             
             mShooter.setHoodAdjustment(mSmartDashboardInteractions.areAutoBallsWorn()
             ? Constants.kOldBallHoodAdjustment : Constants.kNewBallHoodAdjustment);
-         //   c.start();
+            c.start();
            
             mEnabledLooper.start();
 
@@ -193,7 +193,7 @@ public class Robot extends TimedRobot {
             mDrive.resetEncoders();
 
            
-         //  c.start();
+           c.start();
 
            zeroAllSensors();
 
@@ -295,6 +295,12 @@ public class Robot extends TimedRobot {
                 mShooter.setHoodAdjustment(Constants.kOldBallHoodAdjustment);
                 mShooter.setWantedState(Shooter.WantedState.WANT_AUTO);
               
+            }else if(mControls.getShooterOpenLoop()){
+                mShooter.setWantedState(Shooter.WantedState.WANT_OPEN_LOOP);
+            }
+
+            if(mControls.getShooterFireOneWhenReady()){
+                mShooter.setWantsToFireWhenReady(Shooter.WantedFiringAmount.WANT_FIRE_ONE);
             }
             
             mShooter.setTurretManualScanOutput(mControls.getTurretManual() * .12);
@@ -302,9 +308,9 @@ public class Robot extends TimedRobot {
             if (mHoodTuningMode) {
                 mShooter.setTuningMode(true);
                 if (mControls.getHoodTuningPositiveButton()) {
-                    mShooter.setHoodManualScanOutput(0.05);
+                    mShooter.setHoodManualScanOutput(0.4);
                 } else if (mControls.getHoodTuningNegativeButton()) {
-                    mShooter.setHoodManualScanOutput(-0.05);
+                    mShooter.setHoodManualScanOutput(-0.4);
                 } else {
                     mShooter.setHoodManualScanOutput(0.0);
                 }
@@ -312,7 +318,8 @@ public class Robot extends TimedRobot {
                 mShooter.setTuningMode(false);
             }
 
-
+            if(mControls.addBeltBall()) mRobotState.setIntakeBalls(1);
+            else if(mControls.subtractBeltBall()) mRobotState.setIntakeBalls(-1);
 
            allPeriodic();
      
