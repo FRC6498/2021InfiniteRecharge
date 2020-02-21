@@ -10,9 +10,11 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
+import frc.robot.ControlBoard;
 import frc.robot.RobotState;
 import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
+import frc.robot.subsystems.BeltClamp.SystemState;
 
 /**
  
@@ -54,9 +56,9 @@ public class Intake extends Subsystem {
 
     
     
-    enum SystemState {IDLE, INTAKE_GROUND, INTAKE_LOAD};
+    enum SystemState {IDLE, INTAKE_GROUND, INTAKE_LOAD, PLOW};
     
-   public enum WantedState {WANT_IDLE, WANT_INTAKE_GROUND, WANT_INTAKE_LOAD};
+   public enum WantedState {WANT_IDLE, WANT_INTAKE_GROUND, WANT_INTAKE_LOAD, WANT_PLOW};
 
     private WantedState mWantedState = WantedState.WANT_IDLE;
 
@@ -93,6 +95,10 @@ public class Intake extends Subsystem {
                     break;
                 case INTAKE_LOAD:
                     newState = handleIntakeLoad(now);
+                    break;
+                case PLOW:
+                    newState = handlePlow();
+                    break;
                 default:
                     System.out.println("Unexpected Intake state: " + mSystemState);
                     newState = SystemState.IDLE;
@@ -145,25 +151,43 @@ public class Intake extends Subsystem {
 
     private double ballSeenStartTime=0;
     private double actuationStartTime=0;
+    private double rumbleTime=.3;
+    private double rumbleStartTime=0;
     private synchronized SystemState handleIntakeGround(double now, double startTime){
 
         if(mStateChanged){
             mSolenoid.set(true);
            setOpenLoop(Constants.kIntakeGroundSpeed);
         }
+        double currentThreshold = Constants.kIntakeGroundCurrentThreshold;
+        if(Constants.kIntakeVelocityCompensation){
+            double avgVelocity = (Drive.getInstance().getLeftVelocityInchesPerSec()
+            +Constants.kIntakeVelocityRateOfChange*Drive.getInstance().getRightVelocityInchesPerSec())/2;
+            setOpenLoop(Constants.kIntakeGroundSpeed+Constants.kIntakeVelocityRateOfChange+avgVelocity);
+
+            currentThreshold = currentThreshold+Constants.kIntakeCurrentRateOfChange*avgVelocity;
+        }
 
         if(now-startTime>=Constants.kIntakeActuationTime){
-
-            if(ballSeenStartTime==0&&getCurrent()>=Constants.kIntakeGroundCurrentThreshold ){
+               
+           
+            if(ballSeenStartTime==0&&getCurrent()>=currentThreshold ){
                 ballSeenStartTime=now;
             //  System.out.println("Intake ball detected");
                 mRobotState.setIntakeBalls(1);
+                ControlBoard.getInstance().setRumble(.75);
+                rumbleStartTime=now; //rumble on when ball seen
 
             }else if(now-ballSeenStartTime>=Constants.kIntakeGroundTimeThreshold){
                 ballSeenStartTime = 0;
 
             }
        
+        }
+
+        if(rumbleStartTime!=0&&now-rumbleStartTime>=rumbleTime){
+            ControlBoard.getInstance().setRumble(0);
+            rumbleStartTime=0;
         }
             
         if(actuationStartTime!=0&&now-actuationStartTime>=Constants.kIntakeActuationTime){
@@ -172,6 +196,12 @@ public class Intake extends Subsystem {
         }else if(actuationStartTime!=0){
         }else if(mRobotState.getTotalBalls()>=5){
             actuationStartTime=now;
+        }
+
+
+
+        if(mWantedState!=WantedState.WANT_INTAKE_GROUND) {
+            ControlBoard.getInstance().rumbleOff();
         }
 
         switch(mWantedState){
@@ -185,6 +215,24 @@ public class Intake extends Subsystem {
     }
 
     private synchronized SystemState handleIntakeLoad(double now){
+
+        switch(mWantedState){
+            case WANT_INTAKE_GROUND:
+                return SystemState.INTAKE_GROUND;
+            case WANT_INTAKE_LOAD:
+                return SystemState.INTAKE_LOAD;
+            default:
+                return SystemState.IDLE;
+        }
+    }
+
+    private synchronized SystemState handlePlow(){
+
+
+        if(mStateChanged){
+            mSolenoid.set(true);
+           setOpenLoop(-Constants.kIntakePlowSpeed);
+        }
 
         switch(mWantedState){
             case WANT_INTAKE_GROUND:

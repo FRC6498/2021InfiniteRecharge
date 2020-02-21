@@ -11,6 +11,8 @@ import frc.lib.util.DriveSignal;
 import frc.lib.util.RigidTransform2d;
 import frc.lib.util.Rotation2d;
 import frc.robot.StateMachines.Shooter;
+import frc.robot.Vision.TurretCam;
+import frc.robot.Vision.TurretCam.LightMode;
 import frc.robot.auto.AutoModeExecuter;
 import frc.robot.loops.Looper;
 import frc.robot.loops.RobotStateEstimator;
@@ -139,6 +141,8 @@ public class Robot extends TimedRobot {
 
             c.stop();
 
+            TurretCam.setLedMode(LightMode.eOff);
+
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             mDrive.setBrakeMode(true);
             // Stop all actuators
@@ -254,9 +258,9 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         try {
-
+            
             double throttle = mControls.getThrottle();
-            double turn = mControls.getTurn();
+            double turn = mCheesyDriveHelper.handleDeadband(mControls.getTurn(), .05) ;
             if (mControls.getTractionControl()) {
                 Rotation2d heading_setpoint = mDrive.getGyroAngle();
                 if (mDrive.getControlState() == Drive.DriveControlState.VELOCITY_HEADING_CONTROL) {
@@ -277,14 +281,34 @@ public class Robot extends TimedRobot {
                                 * Constants.kDriveLowGearMaxSpeedInchesPerSec,
                         heading_setpoint);
             }*/else {
-                mDrive.setBrakeMode(false);
-                mDrive.setHighGear(!mControls.getLowGear());
-                mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControls.getQuickTurn()));
+               // mDrive.setBrakeMode(false);
+           /*     double offset=0;
+                if(Math.abs(turn)>.05) offset=-turn*1;
+                Rotation2d  heading_setpoint;
+              //  Rotation2d heading_setpoint = Rotation2d.fromDegrees(mDrive.getGyroAngle().getDegrees()+offset);
+                if (mDrive.getControlState() == Drive.DriveControlState.VELOCITY_HEADING_CONTROL) {
+                   heading_setpoint = mDrive.getVelocityHeadingSetpoint().getHeading().rotateBy(Rotation2d.fromDegrees(offset));
+                }else{
+                    heading_setpoint=mDrive.getGyroAngle();
+                }
+                mDrive.setVelocityHeadingSetpoint(
+                        mCheesyDriveHelper.handleDeadband(throttle, CheesyDriveHelper.kThrottleDeadband)
+                                * Constants.kDriveLowGearMaxSpeedInchesPerSec,
+                        heading_setpoint);
+                
+
+                */
+                //mDrive.setHighGear(!mControls.getLowGear());
+                mDrive.setOpenLoop(mControls.getDriveSignal());//mCheesyDriveHelper.cheesyDrive(throttle, turn, mControls.getQuickTurn()));
             }
+
+            if(mControls.getLowGear()) mDrive.setHighGear(false);
+            else if(mControls.getHighGear()) mDrive.setHighGear(true);
             
 
             if(mControls.getIntake()) mIntake.setWantedState(Intake.WantedState.WANT_INTAKE_GROUND);
             else if(mControls.getStopIntake()) mIntake.setWantedState(Intake.WantedState.WANT_IDLE);
+            else if(mControls.getPlow()) mIntake.setWantedState(Intake.WantedState.WANT_PLOW);
             
 
             if (mControls.getAutoAimNewBalls()) {
@@ -297,29 +321,46 @@ public class Robot extends TimedRobot {
               
             }else if(mControls.getShooterOpenLoop()){
                 mShooter.setWantedState(Shooter.WantedState.WANT_OPEN_LOOP);
+            } else if(mControls.getStopShooter()){
+                mShooter.setWantedState(Shooter.WantedState.WANT_IDLE);
             }
 
             if(mControls.getShooterFireOneWhenReady()){
-                mShooter.setWantsToFireWhenReady(Shooter.WantedFiringAmount.WANT_FIRE_ONE);
+                mShooter.setWantsToFireIfReady(Shooter.WantedFiringAmount.WANT_FIRE_ONE);
             }
             
             mShooter.setTurretManualScanOutput(mControls.getTurretManual() * .12);
 
             if (mHoodTuningMode) {
                 mShooter.setTuningMode(true);
-                if (mControls.getHoodTuningPositiveButton()) {
+              /*  if (mControls.getHoodTuningPositiveButton()) {
                     mShooter.setHoodManualScanOutput(0.4);
                 } else if (mControls.getHoodTuningNegativeButton()) {
                     mShooter.setHoodManualScanOutput(-0.4);
                 } else {
                     mShooter.setHoodManualScanOutput(0.0);
-                }
+                }*/
             } else {
                 mShooter.setTuningMode(false);
             }
 
+          /*  if (mControls.getHoodTuningPositiveButton()) {
+                mShooter.setHoodManualScanOutput(0.4);
+            } else if (mControls.getHoodTuningNegativeButton()) {
+                mShooter.setHoodManualScanOutput(-0.4);
+            } else {
+                mShooter.setHoodManualScanOutput(0.0);
+            }*/
+
+            mShooter.setHoodManualScanOutput(mControls.getHoodTuningAdjustment());
+
             if(mControls.addBeltBall()) mRobotState.setIntakeBalls(1);
             else if(mControls.subtractBeltBall()) mRobotState.setIntakeBalls(-1);
+
+            if(mControls.addFeederBall()) mRobotState.setFeederBalls(1);
+            else if(mControls.subtractFeederBall()) mRobotState.setFeederBalls(-1);
+
+            if(mControls.fillBalls()) mRobotState.fillBalls();
 
            allPeriodic();
      

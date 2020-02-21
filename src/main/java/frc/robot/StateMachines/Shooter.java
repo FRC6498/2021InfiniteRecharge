@@ -73,7 +73,7 @@ public class Shooter extends Subsystem {
     public enum WantedFiringState {
         WANT_TO_HOLD_FIRE, // The user does not wish to fire
         WANT_TO_FIRE_NOW, // The user wants to fire now, regardless of readiness
-        WANT_TO_FIRE_WHEN_READY // The user wants to fire as soon as we achieve
+        WANT_TO_FIRE_IF_READY // The user wants to fire as soon as we achieve
                                 // readiness
     }
 
@@ -171,15 +171,17 @@ public class Shooter extends Subsystem {
                 }
 
 
-              if(mWantedFiringState==WantedFiringState.WANT_TO_FIRE_WHEN_READY&&readyToFire(now)
-                                        ||mWantedFiringState==WantedFiringState.WANT_TO_FIRE_NOW
-                                        &&RobotState.getInstance().getTotalBalls()>0){
+              if((mWantedFiringState==WantedFiringState.WANT_TO_FIRE_IF_READY&&readyToFire(now)
+                                        ||mWantedFiringState==WantedFiringState.WANT_TO_FIRE_NOW)
+                                        &&RobotState.getInstance().getFeederBalls()>0){
                   if(mWantedFiringAmount==WantedFiringAmount.WANT_FIRE_ONE){
                       mWantedFiringState=WantedFiringState.WANT_TO_HOLD_FIRE;
                       FeederFlywheel.getInstance().setWantedState(FeederFlywheel.WantedState.WANT_FEED_ONE);
                   }else{
                     FeederFlywheel.getInstance().setWantedState(FeederFlywheel.WantedState.WANT_FEED_CONTINUOUS);
                   }
+              }else{
+                  mWantedFiringState=WantedFiringState.WANT_TO_HOLD_FIRE;
               }
                
                 //mHoodRoller.getLoop().onLoop();
@@ -208,8 +210,8 @@ public class Shooter extends Subsystem {
         mWantedFiringAmount = amount;
     }
 
-    public synchronized void setWantsToFireWhenReady(WantedFiringAmount amount) {
-        mWantedFiringState = WantedFiringState.WANT_TO_FIRE_WHEN_READY;
+    public synchronized void setWantsToFireIfReady(WantedFiringAmount amount) {
+        mWantedFiringState = WantedFiringState.WANT_TO_FIRE_IF_READY;
         mWantedFiringAmount = amount;
     }
 

@@ -39,7 +39,7 @@ public class FeederFlywheel extends Subsystem {
        
         pid_ = neo_.getPIDController();
   
-       /* pid_.setP(Constants.kFeederFlywheelKp);
+        pid_.setP(Constants.kFeederFlywheelKp);
         pid_.setI(Constants.kFeederFlywheelKi);
         pid_.setD(Constants.kFeederFlywheelKd);
         pid_.setFF(Constants.kFeederFlywheelKf);
@@ -47,7 +47,7 @@ public class FeederFlywheel extends Subsystem {
         neo_.setClosedLoopRampRate(Constants.kFeederFlywheelRampRate);
         neo_.setOpenLoopRampRate(Constants.kFeederFlywheelRampRate);
 
-        neo_.setIdleMode(IdleMode.kCoast);*/
+        neo_.setIdleMode(IdleMode.kCoast);
 
     }
 
@@ -167,7 +167,7 @@ public class FeederFlywheel extends Subsystem {
     private synchronized SystemState handleFeedContinuous(){
         if(mStateChanged)mNeedsBall=true;
 
-        if(RobotState.getInstance().getTotalBalls()==0){
+        if(RobotState.getInstance().getTotalBalls()<=0){
             mWantedState= WantedState.WANT_IDLE;
         }
 

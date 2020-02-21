@@ -3,6 +3,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import frc.lib.util.DriveSignal;
 
 /**
  * A basic framework for the control board Like the drive code, one instance of
@@ -28,32 +30,135 @@ public class ControlBoard {
 
     }
 
-    // DRIVER CONTROLS
+ 
     public double getThrottle() {
-        double throttle=0;
-        
+        driverArcadeDrive();
+        return throttle;
+    }
+    
+
+   
+    public double getTurn() {
+        driverArcadeDrive();
+        return turn;
+    }
+
+    boolean driveReduction=false;
+    double driveReductionAmount = .7; //remember a higher number means less reduction
+    
+    
+    
+    double throttle=0;
+    double turn=0;
+    
+    public void driverArcadeDrive() {
+        throttle=0;
+        turn=mDriver.getX(Hand.kLeft)*Constants.regularTurnReduction;
+
+        if(Math.abs(turn)<.05) turn=0;
+
+
         if(mDriver.getTriggerAxis(Hand.kRight)>.05) {
             throttle=mDriver.getTriggerAxis(Hand.kRight);			
         }else if(mDriver.getTriggerAxis(Hand.kLeft)>.05) {
             throttle=-mDriver.getTriggerAxis(Hand.kLeft);
-           
+            turn=-turn;
         }else {
             throttle=0;
+            turn=turn*Constants.kDriveSwivelReduction;
         }
-       // if(getDriveInverted()&&throttle!=0){
+        if(getDriveInverted()&&throttle!=0){
             //turn=turn;
-       //     throttle=-throttle;
-       // }
-       return throttle;
+            throttle=-throttle;
+        }
+        
+
+        //System.out.println("turn: "+turn+" throttle: "+throttle);
     }
 
-    public double getTurn() {
-        return mDriver.getX(Hand.kLeft);
+   
+    public DriveSignal getDriveSignal() {
+        boolean squareInputs=true;
+        double xSpeed;
+        double zRotation;
+        
+        driverArcadeDrive();
+        
+
+        xSpeed=throttle;
+    
+        zRotation = turn;
+        
+    
+        // Square the inputs (while preserving the sign) to increase fine control
+        // while permitting full power.
+        if (squareInputs) {
+            xSpeed = Math.copySign(xSpeed * xSpeed, xSpeed);
+            zRotation = Math.copySign(zRotation * zRotation, zRotation);
+        }
+        
+        
+
+        double leftMotorOutput;
+        double rightMotorOutput;
+    
+        double maxInput = Math.copySign(Math.max(Math.abs(xSpeed), Math.abs(zRotation)), xSpeed);
+    
+        if (xSpeed >= 0.0) {
+            // First quadrant, else second quadrant
+            if (zRotation >= 0.0) {
+            leftMotorOutput = maxInput;
+            rightMotorOutput = xSpeed - zRotation;
+            } else {
+            leftMotorOutput = xSpeed + zRotation;
+            rightMotorOutput = maxInput;
+            }
+        } else {
+            // Third quadrant, else fourth quadrant
+            if (zRotation >= 0.0) {
+            leftMotorOutput = xSpeed + zRotation;
+            rightMotorOutput = maxInput;
+            } else {
+            leftMotorOutput = maxInput;
+            rightMotorOutput = xSpeed - zRotation;
+            }
+        }
+        double m_rightSideInvertMultiplier = 1.0;
+
+        leftMotorOutput=(limit(leftMotorOutput) * 1);
+        rightMotorOutput=(limit(rightMotorOutput) * 1 * m_rightSideInvertMultiplier);
+
+        
+    // System.out.println("Rot:"+turn+" xSpeed: "+xSpeed+" Left: "+leftMotorOutput+ " right: "+rightMotorOutput);
+        return new DriveSignal(leftMotorOutput,rightMotorOutput,false);
+        
     }
 
-    public boolean getQuickTurn() {
-        return mDriver.getAButton();
+    boolean driveInverted=true;
+ 
+    public boolean getDriveInverted() {
+        if(mDriver.getStickButtonReleased(Hand.kLeft)){
+            driveInverted=!driveInverted;
+         //   if(driveInverted)CameraVision.setStreamMode(StreamMode.LimeMain);
+           // else CameraVision.setStreamMode(StreamMode.USBMain);
+        }
+    
+    
+        return driveInverted;
+
+
     }
+
+    protected double limit(double value) {
+        if (value > 1.0) {
+        return 1.0;
+        }
+        if (value < -1.0) {
+        return -1.0;
+        }
+        return value;
+    }
+
 
     public boolean getTractionControl() {
         return mDriver.getBButton();
@@ -67,24 +172,28 @@ public class ControlBoard {
        return mDriver.getBumper(Hand.kRight);
    }
 
+   public boolean getHighGear(){
+       return mDriver.getBumper(Hand.kLeft);
+   }
+
    public boolean getIntake(){
-       return mDriver.getPOV()==0;
+       return mDriver.getPOV()==180;
    }
    public boolean getStopIntake(){
-       return mDriver.getPOV()==180;
+       return mDriver.getPOV()==0;
+   }
+
+   public boolean getPlow(){
+       return mDriver.getPOV()==90;
    }
 
    //OPERATOR CONTROLS
 
    public double getTurretManual() {
-    if (mOperator.getXButton()) {
-        return 1.0;
-    } else if (mOperator.getYButton()) {
-        return -1.0;
-    } else {
-        return 0.0;
+   double val= mOperator.getX(Hand.kRight);
+   return (Math.abs(val) > Math.abs(.05)) ? val : 0.0;
     }
-}
+
 
     public boolean getAutoAimNewBalls() {
         return mOperator.getYButton();
@@ -92,6 +201,10 @@ public class ControlBoard {
 
     public boolean getAutoAimOldBalls() {
         return mOperator.getXButton();
+    }
+
+    public boolean getStopShooter(){
+        return mOperator.getStickButtonPressed(Hand.kRight);
     }
 
     public boolean getShooterOpenLoop() {
@@ -102,12 +215,17 @@ public class ControlBoard {
         return mOperator.getAButton();
     }
 
-    public boolean getHoodTuningPositiveButton() {
+  /*  public boolean getHoodTuningPositiveButton() {
         return mOperator.getPOV()==180;
     }
 
     public boolean getHoodTuningNegativeButton() {
         return mOperator.getPOV()==0;
+    }*/
+
+    public double getHoodTuningAdjustment(){
+        double val= mOperator.getY(Hand.kRight);
+        return (Math.abs(val) > Math.abs(.05)) ? val : 0.0;
     }
 
     public boolean addBeltBall(){
@@ -118,7 +236,56 @@ public class ControlBoard {
         return mOperator.getBumperPressed(Hand.kLeft);
        
     }
+
+
+    public boolean addFeederBall(){
+        return mOperator.getStartButtonPressed();
+    }
+
+    public boolean subtractFeederBall(){
+        return mOperator.getBackButtonPressed();
+       
+    }
+
+    public boolean fillBalls(){
+        return mOperator.getStickButtonPressed(Hand.kLeft);
+    }
+
+    //RUMBLE ------------------------------------------------------------------------------
+    public enum Controller {Driver,Operator}
+    public enum RumbleSide {left, right, both}
+ 
+    public void setRumble(Controller c, RumbleSide type, double amount) {
+        XboxController controller;
+        if(c==Controller.Driver) controller=mDriver;
+        else controller = mOperator;
+
+        switch(type){
+            case left:
+                controller.setRumble(RumbleType.kLeftRumble,amount);              
+            break;
+            case right:
+               controller.setRumble(RumbleType.kRightRumble,amount);
+            break;
+            case both: 
+               controller.setRumble(RumbleType.kLeftRumble, amount);
+               controller.setRumble(RumbleType.kRightRumble,amount);
+            break;
+        }
+        
+    }
+
+   
+    public void rumbleOff() {
+        setRumble(Controller.Driver, RumbleSide.both, 0);
+        setRumble(Controller.Operator, RumbleSide.both, 0);
+    }
+
     
+    public void setRumble(double amount) {
+        setRumble(Controller.Driver, RumbleSide.both, amount);
+        setRumble(Controller.Operator, RumbleSide.both, amount);
+    }
 
 
 public double getTestControl(){

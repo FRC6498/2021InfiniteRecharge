@@ -82,7 +82,7 @@ public class Drive extends Subsystem {
         public void onStart() {
             setOpenLoop(DriveSignal.NEUTRAL);
             pathFollowingController_ = null;
-            setBrakeMode(false);
+            setBrakeMode(true);
         }
 
         @Override
@@ -154,7 +154,7 @@ public class Drive extends Subsystem {
 
        
         
-        setBrakeMode(false);
+        setBrakeMode(true);
 
         // Set up the encoders
         leftMaster_.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
@@ -166,9 +166,7 @@ public class Drive extends Subsystem {
         rightMaster_.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
        
         rightMaster_.setSensorPhase(false);
-        rightMaster_.setInverted(false[]\
-        []\
-        );
+        rightMaster_.setInverted(false);
         rightChild_.setInverted(false);
         
 

@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.Solenoid;
 public class Constants {
    
 
-    public static double kCenterOfTargetHeight = 98.25; // inches TODO: get this
+    public static double kCenterOfTargetHeight = 90; // inches TODO: get this
 
     // Pose of the turret frame w.r.t. the vehicle frame
     public static double kTurretXOffset = 6;//-7.376;
@@ -21,7 +21,7 @@ public class Constants {
     // Pose of the camera frame w.r.t. the turret frame
     public static double kCameraXOffset = -4.0589;//-6.454;
     public static double kCameraYOffset = 0.0;
-    public static double kCameraZOffset = 25.5;
+    public static double kCameraZOffset = 27;
     public static double kCameraPitchAngleDegrees = 30;//35.75; // calibrated 4/22
     public static double kCameraYawAngleDegrees = 0;//-1.0;
     public static double kCameraDeadband = 0.0;
@@ -52,25 +52,29 @@ public class Constants {
 
     public static double kDriveRampRate=.3;
 
+    public static final double regularTurnReduction=.85;//.7;
+
+    public static final double kDriveSwivelReduction=1;//.85;
+
   
     // Hood constants
     public static double kMinHoodAngle = 45;//42.48;
-    public static double kMaxHoodAngle = 75.96;//71.42;
+    public static double kMaxHoodAngle = 78;//55;//75.96;//71.42;
     public static double kHoodNeutralAngle = 46.5;//42.5;
     public static double kHoodOnTargetTolerance = 0.4;
     //public static double kHoodGearReduction = 20/564; 
 
       // Turret constants
-    public static double kHardMaxTurretAngle = 135+13.35;
+    public static double kHardMaxTurretAngle = 45;//135+13.35;
     public static double kHardMinTurretAngle = -135-13.25;
     public static double kSoftMaxTurretAngle = 134+13.35;
-    public static double kSoftMinTurretAngle = -134-13.25;
+    public static double kSoftMinTurretAngle = -90;//-134-13.25;
     public static double kTurretOnTargetTolerance = 0.8;
     public static double kTurretTicksPerRotation = (2048*(40/10)*(40/20)*(314/40));
 
     // Flywheel constants
     public static double kFlywheelOnTargetTolerance = 100.0;
-    public static double kFlywheelGoodBallRpmSetpoint = 3000;//6200
+    public static double kFlywheelGoodBallRpmSetpoint = 5700;//6200  different setpoints based on ball quality, for now same
     public static double kFlywheelBadBallRpmSetpoint = kFlywheelGoodBallRpmSetpoint;
 
     // Auto aiming/shooter constants
@@ -80,7 +84,6 @@ public class Constants {
     public static double kAutoAimPredictionTime = 0.25;
     public static int kAutoAimMinConsecutiveCyclesOnTarget = 3;
     public static double kShootActuationTime = 0.75;
-
 
     //Indexer Constants
     public static double kIndexRampRate = .1;
@@ -98,10 +101,14 @@ public class Constants {
     public static double kFeederFlywheelOnTargetTolerance = 200;
 
     //Intake Constatns
-    public static double kIntakeGroundSpeed = .55;
-    public static double kIntakeGroundCurrentThreshold = 12;
+    public static double kIntakeGroundSpeed = .65;
+    public static boolean kIntakeVelocityCompensation=true;
+    public static double kIntakeVelocityRateOfChange = .05;
+    public static double kIntakeCurrentRateOfChange = .05;
+    public static double kIntakeGroundCurrentThreshold = 20;
     public static double kIntakeGroundTimeThreshold = 1;
     public static double kIntakeActuationTime = 1;
+    public static double kIntakePlowSpeed = .75;
     
     //Belt Clamp Constants
     public static double kBeltClampConveySpeed=.6;
@@ -160,30 +167,30 @@ public class Constants {
     // PID gains for turret position loop
     // Units: error is 4096 counts/rev. Max output is +/- 1023 units.
     public static double kTurretKp = .25;//0.7;
-    public static double kTurretKi = 0.0003;
+    public static double kTurretKi = 0.0005;
     public static double kTurretKd = 0.0;
     public static double kTurretKf = 0;
     public static int kTurretIZone = (int) (1023.0 / kTurretKp);
     public static double kTurretRampRate = .1;
     public static int kTurretAllowableError = 80;
-    public static double kTurretMaxPercentOut = .4;
+    public static double kTurretMaxPercentOut = .25;//.4;
 
     // PID gains for flywheel velocity loop
     // Units: error is (4096 counts/rev)/100ms. Max output is +/- 1023 units.
-    public static double kFlywheelKp = 0.12;
-    public static double kFlywheelKi = 0.0;
-    public static double kFlywheelKd = 0.5;
-    public static double kFlywheelKf = 0.014;
+    public static double kFlywheelKp = .0003;//0.00005;
+    public static double kFlywheelKi = 0.000001;
+    public static double kFlywheelKd = 0;//0.5;
+    public static double kFlywheelKf = 0.000165;
     public static int kFlywheelIZone = (int) (1023.0 / kFlywheelKp);
     public static double kFlywheelRampRate = .1;
     public static int kFlywheelAllowableError = 0;
 
     // PID gains for feeder flywheel velocity loop
     // Units: error is (4096 counts/rev)/100ms. Max output is +/- 1023 units.
-    public static double kFeederFlywheelKp = 0.12;
+    public static double kFeederFlywheelKp = 0.00001;
     public static double kFeederFlywheelKi = 0.0;
-    public static double kFeederFlywheelKd = 0.5;
-    public static double kFeederFlywheelKf = 0.014;
+    public static double kFeederFlywheelKd = 0;//0.5;
+    public static double kFeederFlywheelKf = 0.000165;
     public static int kFeederFlywheelIZone = (int) (1023.0 / kFlywheelKp);
     public static double kFeederFlywheelRampRate = .1;
     public static int kFeederFlywheelAllowableError = 0;

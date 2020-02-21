@@ -54,7 +54,7 @@ public class Hood extends Subsystem {
     ControlMode control_mode_=ControlMode.HOMING;
 
     Loop mLoop = new Loop() {
-        static final double kHomingTimeSeconds = 1.0;
+        static final double kHomingTimeSeconds = 2.0;
         ControlMode last_iteration_control_mode_ = ControlMode.POSITION;
         double homing_start_time_ = 0;
 
@@ -136,15 +136,29 @@ public class Hood extends Subsystem {
      * @return The hood's current angle.
      */
     public synchronized double getAngle() {
-        return -encoder_.getContinuousAngleDegrees() * 20 / 564+ Constants.kMinHoodAngle;
+        return -encoder_.getContinuousAngleDegrees() *20 / 560 + Constants.kMinHoodAngle;
     }
 
     private synchronized void set(double power) {
-        servo_.set(-power);
+        power=-power;
+        if(control_mode_==ControlMode.HOMING) servo_.set(power);
+        else{
+            double angle = getAngle();
+            if(power<0&&angle<Constants.kMaxHoodAngle-1) servo_.set(power); //going up
+
+            else if(power>0&&angle>Constants.kMinHoodAngle+1) servo_.set(power); //going down
+
+            else servo_.set(0);
+
+
+        }
+
     }
 
     public synchronized void setOpenLoop(double power) {
         if (control_mode_ != ControlMode.HOMING) {
+
+
             set(power);
             control_mode_ = ControlMode.OPEN_LOOP;
         }
@@ -176,7 +190,7 @@ public class Hood extends Subsystem {
         if (success) {
             has_homed_ = true;
             control_mode_ = ControlMode.POSITION;
-            zeroSensors();
+            encoder_.zero();
         } else {
             control_mode_ = ControlMode.OPEN_LOOP;
         }

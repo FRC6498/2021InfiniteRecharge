@@ -49,7 +49,7 @@ public class Flywheel extends Subsystem {
        
         pid_ = neo_.getPIDController();
   
-       /* pid_.setP(Constants.kFlywheelKp);
+        pid_.setP(Constants.kFlywheelKp);
         pid_.setI(Constants.kFlywheelKi);
         pid_.setD(Constants.kFlywheelKd);
         pid_.setFF(Constants.kFlywheelKf);
@@ -57,7 +57,7 @@ public class Flywheel extends Subsystem {
         neo_.setClosedLoopRampRate(Constants.kFlywheelRampRate);
         neo_.setOpenLoopRampRate(Constants.kFlywheelRampRate);
 
-        neo_.setIdleMode(IdleMode.kCoast);*/
+        neo_.setIdleMode(IdleMode.kCoast);
 
     }
 
