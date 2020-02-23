@@ -6,9 +6,12 @@ import java.util.List;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.util.InterpolatingDouble;
+import frc.lib.util.ReflectingCSVWriter;
 import frc.lib.util.Rotation2d;
 import frc.robot.Constants;
 import frc.robot.RobotState;
+import frc.robot.ShooterTuning.FlywheelRPMs;
+import frc.robot.ShooterTuning.HoodAngles;
 import frc.robot.Vision.TurretCam;
 import frc.robot.Vision.TurretCam.CameraMode;
 import frc.robot.Vision.TurretCam.LightMode;
@@ -46,6 +49,13 @@ public class Shooter extends Subsystem {
         return mInstance;
     }
 
+    public static class HoodTuningOutput {
+        public double timestamp;
+        public double range;
+        public double angle;
+        public double rpm;
+    }
+
     /**
      * Drives actual state, all outputs should be dictated by this state
      */
@@ -53,6 +63,7 @@ public class Shooter extends Subsystem {
         IDLE, //move to center and retract hood
         AUTO_AIM, //automatically aims when in range
         UNJAMMING, //ifits jammed, get the balls out
+        DUMP_TO_TRENCH,
         OPEN_LOOP
     }
 
@@ -63,6 +74,7 @@ public class Shooter extends Subsystem {
         WANT_AUTO,
         WANT_OPEN_LOOP,
         WANT_UNJAM,
+        WANT_DUMP_TO_TRENCH,
         WANT_IDLE
     }
 
@@ -82,6 +94,8 @@ public class Shooter extends Subsystem {
         WANT_FIRE_CONTINUOUS
     }
 
+    private boolean automaticShooting = false;
+
 
     private WantedState mWantedState = WantedState.WANT_IDLE;
     private WantedFiringState mWantedFiringState = WantedFiringState.WANT_TO_HOLD_FIRE;
@@ -91,6 +105,9 @@ public class Shooter extends Subsystem {
     private double mCurrentAngleForLogging;
     
     private boolean mTuningMode = false;
+
+    private HoodTuningOutput mHoodTuningOutput = new HoodTuningOutput();
+    private final ReflectingCSVWriter<HoodTuningOutput> mCSVWriter;
 
     private double mTurretManualScanOutput = 0;
     private ShooterAimingParameters mTurretManualSetpoint = null;
@@ -134,6 +151,7 @@ public class Shooter extends Subsystem {
                 mSystemState = SystemState.IDLE;
                 mStateChanged = true;
                 mTurretManualSetpoint = null;
+                System.out.println("Shooter loop start");
             }
         }
 
@@ -156,6 +174,9 @@ public class Shooter extends Subsystem {
                 case OPEN_LOOP:
                     newState = handleOpenLoop();
                     break;
+                case DUMP_TO_TRENCH:
+                    newState = handleDumpToTrench();
+                    break;
                 default:
                     System.out.println("Unexpected shooter state: " + mSystemState);
                     newState = SystemState.IDLE;
@@ -169,6 +190,9 @@ public class Shooter extends Subsystem {
                 } else {
                     mStateChanged = false;
                 }
+
+
+                
 
 
               if((mWantedFiringState==WantedFiringState.WANT_TO_FIRE_IF_READY&&readyToFire(now)
@@ -192,15 +216,30 @@ public class Shooter extends Subsystem {
         public void onStop() {
             synchronized (Shooter.this) {
               stop();
+             if(mTuningMode) mCSVWriter.flush();
                
             }
         }
     };
 
     private Shooter() {
+
+        mCSVWriter = new ReflectingCSVWriter<HoodTuningOutput>("/home/lvuser/HOOD-LOGS.csv",
+        HoodTuningOutput.class);
+
+        System.out.println("Shooter initalized");
+
     }
 
-    
+    public synchronized void addHoodCSV(){
+        mHoodTuningOutput.timestamp=Timer.getFPGATimestamp();
+        mHoodTuningOutput.range = mCurrentRangeForLogging;
+        mHoodTuningOutput.rpm = mFlywheel.getRpm();
+        mHoodTuningOutput.angle = mHood.getAngle();
+        mCSVWriter.add(mHoodTuningOutput);
+    }
+
+  
 
     public synchronized void setWantedState(WantedState newState) {
         mWantedState = newState;
@@ -217,6 +256,10 @@ public class Shooter extends Subsystem {
 
     public synchronized void setWantsToHoldFire() {
         mWantedFiringState = WantedFiringState.WANT_TO_HOLD_FIRE;
+    }
+
+    public synchronized void setAutoShoot(boolean on){
+        automaticShooting = on;
     }
 
     @Override
@@ -306,6 +349,8 @@ public class Shooter extends Subsystem {
                 return SystemState.UNJAMMING;            
             case WANT_OPEN_LOOP:
                 return SystemState.OPEN_LOOP;    
+            case WANT_DUMP_TO_TRENCH:
+                return SystemState.DUMP_TO_TRENCH;
             default:
                 return SystemState.IDLE;
         }
@@ -321,15 +366,52 @@ public class Shooter extends Subsystem {
                 return SystemState.UNJAMMING;       
             case WANT_OPEN_LOOP:
                 return SystemState.OPEN_LOOP;       
+            case WANT_DUMP_TO_TRENCH:
+                return SystemState.DUMP_TO_TRENCH;
             default:
                 return SystemState.IDLE;
         }
     }
 
+
+    private synchronized SystemState handleDumpToTrench(){
+
+        if(mStateChanged){
+            mFlywheel.setRpm(Constants.kDumpToTrenchSpeed);
+            mHood.setDesiredAngle(Rotation2d.fromDegrees(Constants.kDumpToTrenchPitch));
+            mTurret.setDesiredAngle(Rotation2d.fromDegrees(Constants.kDumpToTrenchYaw));
+
+            setWantsToFireIfReady(WantedFiringAmount.WANT_FIRE_CONTINUOUS);
+        }
+
+
+        
+       if(mTurretManualScanOutput!=0) mTurret.setOpenLoop(mTurretManualScanOutput);
+                   
+       if(mHoodManualScanOutput!=0)mHood.setOpenLoop(mHoodManualScanOutput);
+
+        if(mWantedState!=WantedState.WANT_DUMP_TO_TRENCH){
+            setWantsToHoldFire();
+        }
+
+        switch(mWantedState){
+            case WANT_AUTO:
+                return SystemState.AUTO_AIM;
+            case WANT_UNJAM:
+                return SystemState.UNJAMMING;       
+            case WANT_OPEN_LOOP:
+                return SystemState.OPEN_LOOP;       
+            case WANT_DUMP_TO_TRENCH:
+                return SystemState.DUMP_TO_TRENCH;
+            default:
+                return SystemState.IDLE;
+        }
+    }
+
+
     private synchronized SystemState handleOpenLoop(){
         if(mStateChanged){
-            TurretCam.setCameraMode(CameraMode.eDriver);
-            TurretCam.setLedMode(LightMode.eOff);
+            mFlywheel.setRpm(Constants.kFlywheelGoodBallRpmSetpoint);
         }
     
        
@@ -343,7 +425,7 @@ public class Shooter extends Subsystem {
                     mHood.setOpenLoop(mHoodManualScanOutput);
                     
                 }
-                mFlywheel.setRpm(Constants.kFlywheelGoodBallRpmSetpoint);
+               
                 
 
         switch(mWantedState){
@@ -353,6 +435,8 @@ public class Shooter extends Subsystem {
                 return SystemState.UNJAMMING;       
             case WANT_OPEN_LOOP:
                 return SystemState.OPEN_LOOP;     
+            case WANT_DUMP_TO_TRENCH:
+                return SystemState.DUMP_TO_TRENCH;
             default:
                 return SystemState.IDLE;
         }
@@ -368,7 +452,7 @@ public class Shooter extends Subsystem {
     }
 
     ShooterAimingParameters aimingParameters = getCurrentAimingParameters(now);
-        if (aimingParameters==null){// && (allow_changing_tracks || mTurretManualSetpoint != null)) {
+      /*  if (aimingParameters==null){// && (allow_changing_tracks || mTurretManualSetpoint != null)) {
             // Manual search
             if (mTurretManualSetpoint != null) {
                 mTurret.setDesiredAngle(mTurretManualSetpoint.getTurretAngle());
@@ -380,7 +464,10 @@ public class Shooter extends Subsystem {
                 } else {
                    mHood.setOpenLoop(mHoodManualScanOutput);
                 }
-            }
+            }*/
+        if( false){//mTurretManualScanOutput!=0){
+
+            mTurret.setOpenLoop(mTurretManualScanOutput);
             mFlywheel.setRpm(Constants.kFlywheelGoodBallRpmSetpoint);
             has_target = false;
         } else {
@@ -408,6 +495,11 @@ public class Shooter extends Subsystem {
                     mCurrentRangeForLogging = aimingParameters.getRange();
                    // mCurrentTrackId = aimingParameters.getTrackid();
                     has_target = true;
+
+                    if(automaticShooting){
+                        setWantsToFireIfReady(WantedFiringAmount.WANT_FIRE_ONE);
+                    }
+
                     //break;
                 //}
 
@@ -418,6 +510,12 @@ public class Shooter extends Subsystem {
            // }
         }
 
+
+        if(mWantedState!=WantedState.WANT_AUTO){
+          //  TurretCam.setCameraMode(CameraMode.eDriver);
+           // TurretCam.setLedMode(LightMode.eOff);
+        }
+
         switch(mWantedState){
             case WANT_AUTO:
                 return SystemState.AUTO_AIM;
@@ -425,6 +523,8 @@ public class Shooter extends Subsystem {
                 return SystemState.UNJAMMING;            
             case WANT_OPEN_LOOP:
                 return SystemState.OPEN_LOOP;
+            case WANT_DUMP_TO_TRENCH:
+                return SystemState.DUMP_TO_TRENCH;
             default:
                 return SystemState.IDLE;
         }
@@ -436,7 +536,7 @@ public class Shooter extends Subsystem {
    
 
     private double getHoodAngleForRange(double range) {
-        InterpolatingDouble result = Constants.kHoodAutoAimMap.getInterpolated(new InterpolatingDouble(range));
+        InterpolatingDouble result = HoodAngles.kHoodAutoAimMap.getInterpolated(new InterpolatingDouble(range));
         if (result != null) {
             return result.value;
         } else {
@@ -462,20 +562,20 @@ public class Shooter extends Subsystem {
     }
 
     private double getShootingSetpointRpm(double range) {
-        return Constants.kFlywheelAutoAimMap.getInterpolated(new InterpolatingDouble(range)).value;
+        return FlywheelRPMs.kFlywheelAutoAimMap.getInterpolated(new InterpolatingDouble(range)).value;
     }
 
     private boolean readyToFire(double now) {
         boolean is_stopped = Math.abs(mDrive.getLeftVelocityInchesPerSec()) < Constants.kAutoShootMaxDriveSpeed
                 && Math.abs(mDrive.getRightVelocityInchesPerSec()) < Constants.kAutoShootMaxDriveSpeed;
         if (mSystemState == SystemState.AUTO_AIM) {
-            if ((mTuningMode || mHood.isOnTarget()) && mFlywheel.isOnTarget() && mTurret.isOnTarget()
+            if ((mTuningMode || mHood.isOnTarget()) && /*mFlywheel.isOnTarget()*/ true && mTurret.isOnTarget()
                     && hasTarget()) {
                 mConsecutiveCyclesOnTarget++;
             } else {
                 mConsecutiveCyclesOnTarget = 0;
             }
-        } else if (mSystemState == SystemState.OPEN_LOOP) {
+        } else if (mSystemState == SystemState.OPEN_LOOP||mSystemState==SystemState.DUMP_TO_TRENCH) {
             if (mFlywheel.isOnTarget()) {
                 mConsecutiveCyclesOnTarget++;
             } else {
@@ -501,5 +601,11 @@ public class Shooter extends Subsystem {
         
 
         return true;
+    }
+
+
+    @Override
+    public void writeToLog() {
+        mCSVWriter.write();
     }
 }

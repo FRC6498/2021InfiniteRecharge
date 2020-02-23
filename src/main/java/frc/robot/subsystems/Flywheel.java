@@ -49,14 +49,14 @@ public class Flywheel extends Subsystem {
        
         pid_ = neo_.getPIDController();
   
-        pid_.setP(Constants.kFlywheelKp);
+      /*  pid_.setP(Constants.kFlywheelKp);
         pid_.setI(Constants.kFlywheelKi);
         pid_.setD(Constants.kFlywheelKd);
         pid_.setFF(Constants.kFlywheelKf);
         pid_.setIZone(Constants.kFlywheelIZone);
         neo_.setClosedLoopRampRate(Constants.kFlywheelRampRate);
         neo_.setOpenLoopRampRate(Constants.kFlywheelRampRate);
-
+*/
         neo_.setIdleMode(IdleMode.kCoast);
 
     }
@@ -100,10 +100,10 @@ public class Flywheel extends Subsystem {
 
     @Override
     public void outputToSmartDashboard() {
-        SmartDashboard.putNumber("flywheel_rpm", getRpm());
-        SmartDashboard.putNumber("flywheel_setpoint", getSetpoint());
-        SmartDashboard.putBoolean("flywheel_on_target", isOnTarget());
-        SmartDashboard.putNumber("flywheel_master_current", neo_.getOutputCurrent());
+        //SmartDashboard.putNumber("flywheel_rpm", getRpm());
+       // SmartDashboard.putNumber("flywheel_setpoint", getSetpoint());
+       // SmartDashboard.putBoolean("flywheel_on_target", isOnTarget());
+       // SmartDashboard.putNumber("flywheel_master_current", neo_.getOutputCurrent());
        
     }
 

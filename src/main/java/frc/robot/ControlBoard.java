@@ -190,66 +190,76 @@ public class ControlBoard {
    //OPERATOR CONTROLS
 
    public double getTurretManual() {
-   double val= mOperator.getX(Hand.kRight);
-   return (Math.abs(val) > Math.abs(.05)) ? val : 0.0;
-    }
-
-
-    public boolean getAutoAimNewBalls() {
-        return mOperator.getYButton();
-    }
-
-    public boolean getAutoAimOldBalls() {
-        return mOperator.getXButton();
-    }
-
-    public boolean getStopShooter(){
-        return mOperator.getStickButtonPressed(Hand.kRight);
-    }
-
-    public boolean getShooterOpenLoop() {
-        return mOperator.getBButton();
-    }
-
-    public boolean getShooterFireOneWhenReady(){
-        return mOperator.getAButton();
-    }
-
-  /*  public boolean getHoodTuningPositiveButton() {
-        return mOperator.getPOV()==180;
-    }
-
-    public boolean getHoodTuningNegativeButton() {
-        return mOperator.getPOV()==0;
-    }*/
-
-    public double getHoodTuningAdjustment(){
-        double val= mOperator.getY(Hand.kRight);
+        double val= -mOperator.getX(Hand.kRight);
         return (Math.abs(val) > Math.abs(.05)) ? val : 0.0;
     }
 
-    public boolean addBeltBall(){
+    public double getHoodTuningAdjustment(){
+        double val= -mOperator.getY(Hand.kRight);
+        return (Math.abs(val) > Math.abs(.05)) ? val : 0.0;
+    }
+
+
+    public boolean getAutoAim() {
         return mOperator.getBumperPressed(Hand.kRight);
     }
 
-    public boolean subtractBeltBall(){
+    public boolean getStopShooter(){
         return mOperator.getBumperPressed(Hand.kLeft);
-       
+    }
+
+    public boolean getShooterOpenLoop() {
+        return mOperator.getStickButtonPressed(Hand.kRight);
+    }
+
+    public boolean getShooterDumpToTrench(){
+        return mOperator.getXButtonPressed();
+    }
+
+    public boolean getShooterFireOneWhenReady(){
+        return mOperator.getTriggerAxis(Hand.kRight)>.5;
+    }
+
+    public boolean getShooterFireOneNow(){
+        return mOperator.getTriggerAxis(Hand.kLeft)>.5;
+    }
+
+    public boolean getAutoShootOn(){
+        return mOperator.getAButtonPressed();
+    }
+
+    public boolean getAutoShootoff(){
+        return mOperator.getBButtonPressed();
     }
 
 
+    public boolean addBeltBall(){
+
+        return mDriver.getAButtonPressed();//mOperator.getPOV()==90;
+
+    }
+
+    public boolean subtractBeltBall(){
+        return mDriver.getYButtonPressed();//mOperator.getPOV()==270;
+    }
+
     public boolean addFeederBall(){
-        return mOperator.getStartButtonPressed();
+        return mDriver.getBackButtonPressed();//mOperator.getPOV()==180;
     }
 
     public boolean subtractFeederBall(){
-        return mOperator.getBackButtonPressed();
-       
+        return mDriver.getStartButtonPressed();//mOperator.getPOV()==0;
     }
 
     public boolean fillBalls(){
         return mOperator.getStickButtonPressed(Hand.kLeft);
     }
+
+    public boolean addCSVValue(){
+        return mOperator.getStartButtonPressed();
+    }
+
+  
 
     //RUMBLE ------------------------------------------------------------------------------
     public enum Controller {Driver,Operator}

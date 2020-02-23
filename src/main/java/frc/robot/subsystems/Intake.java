@@ -161,8 +161,8 @@ public class Intake extends Subsystem {
         }
         double currentThreshold = Constants.kIntakeGroundCurrentThreshold;
         if(Constants.kIntakeVelocityCompensation){
-            double avgVelocity = (Drive.getInstance().getLeftVelocityInchesPerSec()
-            +Constants.kIntakeVelocityRateOfChange*Drive.getInstance().getRightVelocityInchesPerSec())/2;
+            double avgVelocity = Math.abs( (Drive.getInstance().getLeftVelocityInchesPerSec()
+            +Constants.kIntakeVelocityRateOfChange*Drive.getInstance().getRightVelocityInchesPerSec())/2);
             setOpenLoop(Constants.kIntakeGroundSpeed+Constants.kIntakeVelocityRateOfChange+avgVelocity);
 
             currentThreshold = currentThreshold+Constants.kIntakeCurrentRateOfChange*avgVelocity;

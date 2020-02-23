@@ -2,6 +2,8 @@ package frc.robot;
 
 import frc.lib.util.InterpolatingDouble;
 import frc.lib.util.InterpolatingTreeMap;
+import frc.lib.util.Rotation2d;
+import frc.robot.subsystems.ShooterAimingParameters;
 import edu.wpi.first.wpilibj.Solenoid;
 
 /**
@@ -23,7 +25,7 @@ public class Constants {
     public static double kCameraYOffset = 0.0;
     public static double kCameraZOffset = 27;
     public static double kCameraPitchAngleDegrees = 30;//35.75; // calibrated 4/22
-    public static double kCameraYawAngleDegrees = 0;//-1.0;
+    public static double kCameraYawAngleDegrees = -2.0;//-1.0;
     public static double kCameraDeadband = 0.0;
 
     // Goal tracker constants
@@ -65,25 +67,29 @@ public class Constants {
     //public static double kHoodGearReduction = 20/564; 
 
       // Turret constants
-    public static double kHardMaxTurretAngle = 45;//135+13.35;
+    public static double kHardMaxTurretAngle = 135+13.35;
     public static double kHardMinTurretAngle = -135-13.25;
-    public static double kSoftMaxTurretAngle = 134+13.35;
+    public static double kSoftMaxTurretAngle = 45;//134+13.35;
     public static double kSoftMinTurretAngle = -90;//-134-13.25;
     public static double kTurretOnTargetTolerance = 0.8;
     public static double kTurretTicksPerRotation = (2048*(40/10)*(40/20)*(314/40));
 
     // Flywheel constants
     public static double kFlywheelOnTargetTolerance = 100.0;
-    public static double kFlywheelGoodBallRpmSetpoint = 5700;//6200  different setpoints based on ball quality, for now same
+    public static double kFlywheelGoodBallRpmSetpoint = 5000;//6200  different setpoints based on ball quality, for now same
     public static double kFlywheelBadBallRpmSetpoint = kFlywheelGoodBallRpmSetpoint;
 
     // Auto aiming/shooter constants
-    public static double kAutoAimMinRange = 10.0;
-    public static double kAutoAimMaxRange = 220.0;
+    public static double kAutoAimMinRange = 60;//10.0;
+    public static double kAutoAimMaxRange = 400.0;
     public static double kAutoShootMaxDriveSpeed = 18.0;
     public static double kAutoAimPredictionTime = 0.25;
     public static int kAutoAimMinConsecutiveCyclesOnTarget = 3;
-    public static double kShootActuationTime = 0.75;
+    //public static double kShootActuationTime = 0.75;
+
+    public static double kDumpToTrenchYaw = 25;
+    public static double kDumpToTrenchPitch = 50;
+    public static double kDumpToTrenchSpeed = 3000;
 
     //Indexer Constants
     public static double kIndexRampRate = .1;
@@ -101,11 +107,11 @@ public class Constants {
     public static double kFeederFlywheelOnTargetTolerance = 200;
 
     //Intake Constatns
-    public static double kIntakeGroundSpeed = .65;
-    public static boolean kIntakeVelocityCompensation=true;
+    public static double kIntakeGroundSpeed = .75;
+    public static boolean kIntakeVelocityCompensation=false;
     public static double kIntakeVelocityRateOfChange = .05;
     public static double kIntakeCurrentRateOfChange = .05;
-    public static double kIntakeGroundCurrentThreshold = 20;
+    public static double kIntakeGroundCurrentThreshold = 15;
     public static double kIntakeGroundTimeThreshold = 1;
     public static double kIntakeActuationTime = 1;
     public static double kIntakePlowSpeed = .75;
@@ -178,7 +184,7 @@ public class Constants {
     // PID gains for flywheel velocity loop
     // Units: error is (4096 counts/rev)/100ms. Max output is +/- 1023 units.
     public static double kFlywheelKp = .0003;//0.00005;
-    public static double kFlywheelKi = 0.000001;
+    public static double kFlywheelKi = 0.0;//0.0000005;
     public static double kFlywheelKd = 0;//0.5;
     public static double kFlywheelKf = 0.000165;
     public static int kFlywheelIZone = (int) (1023.0 / kFlywheelKp);
@@ -260,35 +266,7 @@ public class Constants {
     // Shooter Operational consts
     public static final double kOldBallHoodAdjustment = 2.4;
     public static final double kNewBallHoodAdjustment = 0.7;
-    public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kHoodAutoAimMap = new InterpolatingTreeMap<>();
-
-    static {
-        /* Tune 4/23 with 6200 rpm setpoint (inch,angle)*/
-        kHoodAutoAimMap.put(new InterpolatingDouble(60.0), new InterpolatingDouble(42.5));
-        kHoodAutoAimMap.put(new InterpolatingDouble(70.0), new InterpolatingDouble(44.5));
-        kHoodAutoAimMap.put(new InterpolatingDouble(75.0), new InterpolatingDouble(46.8));
-        kHoodAutoAimMap.put(new InterpolatingDouble(80.0), new InterpolatingDouble(48.0));
-        kHoodAutoAimMap.put(new InterpolatingDouble(85.0), new InterpolatingDouble(49.0));
-        kHoodAutoAimMap.put(new InterpolatingDouble(90.0), new InterpolatingDouble(50.5));
-        kHoodAutoAimMap.put(new InterpolatingDouble(100.0), new InterpolatingDouble(52.5));
-        kHoodAutoAimMap.put(new InterpolatingDouble(110.0), new InterpolatingDouble(54.5));
-        kHoodAutoAimMap.put(new InterpolatingDouble(120.0), new InterpolatingDouble(56.5));
-        kHoodAutoAimMap.put(new InterpolatingDouble(130.0), new InterpolatingDouble(57.8));
-        kHoodAutoAimMap.put(new InterpolatingDouble(140.0), new InterpolatingDouble(59.0));
-        kHoodAutoAimMap.put(new InterpolatingDouble(150.0), new InterpolatingDouble(59.8));
-        kHoodAutoAimMap.put(new InterpolatingDouble(160.0), new InterpolatingDouble(60.5));
-        kHoodAutoAimMap.put(new InterpolatingDouble(170.0), new InterpolatingDouble(61.0));
-        kHoodAutoAimMap.put(new InterpolatingDouble(180.0), new InterpolatingDouble(61.5));
-    }
-
-    public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kFlywheelAutoAimMap = new InterpolatingTreeMap<>();
-
-    static {
-        kFlywheelAutoAimMap.put(new InterpolatingDouble(75.0),
-                new InterpolatingDouble(Constants.kFlywheelGoodBallRpmSetpoint));
-        kFlywheelAutoAimMap.put(new InterpolatingDouble(Constants.kAutoAimMaxRange),
-                new InterpolatingDouble(Constants.kFlywheelGoodBallRpmSetpoint));
-    }
+   
    
 
 }

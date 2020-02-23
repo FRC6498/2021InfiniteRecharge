@@ -238,10 +238,12 @@ public class RobotState {
 
     public synchronized void setIntakeBalls(int number){
         totalBallsInBelt+=number;
+        if(totalBallsInBelt<0) totalBallsInBelt=0;
     }
 
     public synchronized void setFeederBalls(int number){
         totalBallsInFeeder+=number;
+        if(totalBallsInFeeder<0) totalBallsInFeeder=0;
     }
 
     public synchronized int getFeederBalls(){
@@ -253,7 +255,7 @@ public class RobotState {
     }
 
     public synchronized void fillBalls(){
-        totalBallsInBelt = 5-getFeederBalls();
+       setIntakeBalls( 5-getFeederBalls());
     }
 
     public synchronized int ballsNeeded(){

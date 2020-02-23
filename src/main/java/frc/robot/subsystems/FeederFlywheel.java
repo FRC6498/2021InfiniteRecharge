@@ -39,14 +39,14 @@ public class FeederFlywheel extends Subsystem {
        
         pid_ = neo_.getPIDController();
   
-        pid_.setP(Constants.kFeederFlywheelKp);
+       /* pid_.setP(Constants.kFeederFlywheelKp);
         pid_.setI(Constants.kFeederFlywheelKi);
         pid_.setD(Constants.kFeederFlywheelKd);
         pid_.setFF(Constants.kFeederFlywheelKf);
         pid_.setIZone(Constants.kFeederFlywheelIZone);
         neo_.setClosedLoopRampRate(Constants.kFeederFlywheelRampRate);
         neo_.setOpenLoopRampRate(Constants.kFeederFlywheelRampRate);
-
+*/
         neo_.setIdleMode(IdleMode.kCoast);
 
     }

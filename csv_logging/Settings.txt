@@ -1,0 +1,10 @@
+InputFolder:
+C:\Users\lukeo\OneDrive\Robotics Club\PROGRAMMING\Repositories\2020InfiniteRecharge\csv_logging
+OutputFolder:
+C:\Users\lukeo\OneDrive\Robotics Club\PROGRAMMING\Repositories\2020InfiniteRecharge\src\main\java\frc\robot\ShooterTuning
+Name:
+HOOD-LOGS
+Note about this tuning:
+Castle
+Save Location:
+C:\Users\lukeo\OneDrive\Robotics Club\PROGRAMMING\Repositories\2020InfiniteRecharge\csv_logging\PastLogs

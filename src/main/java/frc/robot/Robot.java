@@ -141,7 +141,7 @@ public class Robot extends TimedRobot {
 
             c.stop();
 
-            TurretCam.setLedMode(LightMode.eOff);
+           // TurretCam.setLedMode(LightMode.eOff);
 
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             mDrive.setBrakeMode(true);
@@ -206,6 +206,24 @@ public class Robot extends TimedRobot {
             mEnabledLooper.start();
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             mDrive.setBrakeMode(false);
+
+            mShooter.setHoodAdjustment(mSmartDashboardInteractions.areAutoBallsWorn()
+            ? Constants.kOldBallHoodAdjustment : Constants.kNewBallHoodAdjustment);
+
+
+
+            if (mHoodTuningMode) {
+                mShooter.setTuningMode(true);
+              /*  if (mControls.getHoodTuningPositiveButton()) {
+                    mShooter.setHoodManualScanOutput(0.4);
+                } else if (mControls.getHoodTuningNegativeButton()) {
+                    mShooter.setHoodManualScanOutput(-0.4);
+                } else {
+                    mShooter.setHoodManualScanOutput(0.0);
+                }*/
+            } else {
+                mShooter.setTuningMode(false);
+            }
 
             
            
@@ -311,38 +329,28 @@ public class Robot extends TimedRobot {
             else if(mControls.getPlow()) mIntake.setWantedState(Intake.WantedState.WANT_PLOW);
             
 
-            if (mControls.getAutoAimNewBalls()) {
-                mShooter.setHoodAdjustment(Constants.kNewBallHoodAdjustment);
+            if (mControls.getAutoAim()) {
                 mShooter.setWantedState(Shooter.WantedState.WANT_AUTO);
-              
-            } else if (mControls.getAutoAimOldBalls()) {
-                mShooter.setHoodAdjustment(Constants.kOldBallHoodAdjustment);
-                mShooter.setWantedState(Shooter.WantedState.WANT_AUTO);
-              
             }else if(mControls.getShooterOpenLoop()){
                 mShooter.setWantedState(Shooter.WantedState.WANT_OPEN_LOOP);
             } else if(mControls.getStopShooter()){
                 mShooter.setWantedState(Shooter.WantedState.WANT_IDLE);
+            }else if(mControls.getShooterDumpToTrench()){
+                mShooter.setWantedState(Shooter.WantedState.WANT_DUMP_TO_TRENCH);
             }
 
             if(mControls.getShooterFireOneWhenReady()){
                 mShooter.setWantsToFireIfReady(Shooter.WantedFiringAmount.WANT_FIRE_ONE);
+            }else if(mControls.getShooterFireOneNow()){
+                mShooter.setWantsToFireNow(Shooter.WantedFiringAmount.WANT_FIRE_ONE);
             }
+
+            if(mControls.getAutoShootOn()) mShooter.setAutoShoot(true);
+            else if(mControls.getAutoShootoff()) mShooter.setAutoShoot(false);
             
             mShooter.setTurretManualScanOutput(mControls.getTurretManual() * .12);
 
-            if (mHoodTuningMode) {
-                mShooter.setTuningMode(true);
-              /*  if (mControls.getHoodTuningPositiveButton()) {
-                    mShooter.setHoodManualScanOutput(0.4);
-                } else if (mControls.getHoodTuningNegativeButton()) {
-                    mShooter.setHoodManualScanOutput(-0.4);
-                } else {
-                    mShooter.setHoodManualScanOutput(0.0);
-                }*/
-            } else {
-                mShooter.setTuningMode(false);
-            }
+            
 
           /*  if (mControls.getHoodTuningPositiveButton()) {
                 mShooter.setHoodManualScanOutput(0.4);
@@ -361,6 +369,8 @@ public class Robot extends TimedRobot {
             else if(mControls.subtractFeederBall()) mRobotState.setFeederBalls(-1);
 
             if(mControls.fillBalls()) mRobotState.fillBalls();
+
+            if(mControls.addCSVValue()) mShooter.addHoodCSV();
 
            allPeriodic();
      
@@ -403,7 +413,7 @@ public class Robot extends TimedRobot {
     public void allPeriodic() {
         
         mSubsystemManager.outputToSmartDashboard();
-        mSubsystemManager.writeToLog();
+        if(mHoodTuningMode) mSubsystemManager.writeToLog();
         mEnabledLooper.outputToSmartDashboard();
         mRobotState.outputToSmartDashboard();
         
