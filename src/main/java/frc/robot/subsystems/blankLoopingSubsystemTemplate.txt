@@ -89,3 +89,44 @@ public class Indexer extends Subsystem {
         in.register(mLoop);
     }
 }
+
+
+
+
+
+
+ private ElevatorState handleExtendingScan()
+    {
+        ElevatorState newState;
+        if (mStateChanged) // setup
+        {
+            liftmotor.set(ControlMode.Velocity, Constants.kLiftScanVelocity);
+        }
+        barLock = false;
+        // always
+        if (barSensor.getVoltage() >= Constants.kBarDetectionThreshold) 
+        {
+            // we see it boys
+            barTimer.start();
+        }
+        else
+        {
+            // keep going
+            barTimer.stop();
+            
+        }
+
+        if (barTimer.get() >= Constants.kLiftBarDetectionTime) // LOCKED ON
+        {
+            barLock = true;
+            liftmotor.set(ControlMode.Position, liftmotor.getSelectedSensorPosition()); // stop here
+            newState = ElevatorState.EXTENDED;
+        }
+        else
+        {
+            // alert drivers
+            newState = mWantedState;
+        }
+
+        return newState;
+    }

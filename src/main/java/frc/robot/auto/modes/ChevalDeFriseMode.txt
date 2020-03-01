@@ -3,7 +3,10 @@ package frc.robot.auto.modes;
 import frc.robot.auto.AutoModeBase;
 import frc.robot.auto.AutoModeEndedException;
 import frc.robot.auto.actions.*;
-
+import frc.robot.subsystems.ShooterAimingParameters;
+import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.WantedState;
+import frc.robot.subsystems.UtilityArm;
 import frc.lib.util.Path;
 import frc.lib.util.Translation2d;
 import frc.lib.util.Path.Waypoint;
@@ -18,16 +21,16 @@ import java.util.List;
  * should launch a single ball.
  */
 public class ChevalDeFriseMode extends AutoModeBase {
-    
+    Superstructure mSuperstructure = Superstructure.getInstance();
 
-   
+    ShooterAimingParameters mHint;
     private final double kDistanceToCDF = 41.0;
     private final double kDistanceToDrive = 200;
     private boolean mShouldDriveBack;
     private boolean mComeBackRight;
 
-    public ChevalDeFriseMode(boolean shouldComeBack, boolean comeBackRight) {
-        
+    public ChevalDeFriseMode(ShooterAimingParameters hint, boolean shouldComeBack, boolean comeBackRight) {
+        mHint = hint;
         mShouldDriveBack = shouldComeBack;
         mComeBackRight = comeBackRight;
     }
@@ -52,10 +55,13 @@ public class ChevalDeFriseMode extends AutoModeBase {
         return_path.add(new Waypoint(new Translation2d(0, y_distance), 60.0));
 
         runAction(new FollowPathAction(new Path(first_path), false));
-        
-        
+        runAction(new GetLowAction());
+        mSuperstructure.setWantedState(WantedState.WANT_TO_KEEP_SPINNING);
         runAction(new FollowPathAction(new Path(second_path), false));
-       
+        runAction(new StartAutoAimingAction());
+        runAction(new PointTurretAction(mHint));
+        runAction(new ShootWhenReadyAction());
+        runAction(new SetArmModeAction(UtilityArm.WantedState.DRIVING));
 
         if (mShouldDriveBack) {
             runAction(new FollowPathAction(new Path(return_path), true));

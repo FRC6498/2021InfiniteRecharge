@@ -390,6 +390,8 @@ public class Shooter extends Subsystem {
                    
        if(mHoodManualScanOutput!=0)mHood.setOpenLoop(mHoodManualScanOutput);
 
+       setWantsToFireIfReady(WantedFiringAmount.WANT_FIRE_CONTINUOUS);
+
         if(mWantedState!=WantedState.WANT_DUMP_TO_TRENCH){
             setWantsToHoldFire();
         }
@@ -465,16 +467,13 @@ public class Shooter extends Subsystem {
                    mHood.setOpenLoop(mHoodManualScanOutput);
                 }
             }*/
-        if( false){//mTurretManualScanOutput!=0){
-
-            mTurret.setOpenLoop(mTurretManualScanOutput);
-            mFlywheel.setRpm(Constants.kFlywheelGoodBallRpmSetpoint);
-            has_target = false;
-        } else {
+        
             // Pick the target to aim at
            has_target = false;
             //for (ShooterAimingParameters param : aimingParameters) {
-                double turret_angle_degrees = aimingParameters.getTurretAngle().getDegrees();
+                double turret_angle_degrees=0;
+               if(aimingParameters!=null){
+                     turret_angle_degrees = aimingParameters.getTurretAngle().getDegrees();
                 if (turret_angle_degrees >= Constants.kSoftMinTurretAngle
                         && turret_angle_degrees <= Constants.kSoftMaxTurretAngle
                         && aimingParameters.getRange() >= Constants.kAutoAimMinRange
@@ -499,16 +498,25 @@ public class Shooter extends Subsystem {
                     if(automaticShooting){
                         setWantsToFireIfReady(WantedFiringAmount.WANT_FIRE_ONE);
                     }
-
+                }
                     //break;
                 //}
-
+                
               
-            }
+            
           //  if (!has_target) {
            //     mCurrentTrackId = -1;
            // }
         }
+
+
+        if( mTurretManualSetpoint!=null&&has_target==false){//mTurretManualScanOutput!=0){
+
+            mTurret.setDesiredAngle(mTurretManualSetpoint.getTurretAngle());
+            mHood.setDesiredAngle(Rotation2d.fromDegrees(mTurretManualSetpoint.getRange()));
+            mFlywheel.setRpm(getShootingSetpointRpm(mTurretManualSetpoint.getRange()));
+         }
+
 
 
         if(mWantedState!=WantedState.WANT_AUTO){
@@ -544,7 +552,7 @@ public class Shooter extends Subsystem {
         }
     }
 
-    private ShooterAimingParameters getCurrentAimingParameters(double now) {
+    public ShooterAimingParameters getCurrentAimingParameters(double now) {
         ShooterAimingParameters param = mRobotState.getAimingParameters(now);
         //if(param!=null)mCachedAimingParams.add(param);
         return param;

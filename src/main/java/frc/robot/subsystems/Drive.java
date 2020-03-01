@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -9,34 +7,24 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.sensors.CANCoder;
 import com.kauailabs.navx.frc.AHRS;
 
-import frc.robot.Constants;
-import frc.robot.Kinematics;
-import frc.robot.RobotState;
-import frc.robot.loops.Loop;
-import frc.robot.loops.Looper;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.util.AdaptivePurePursuitController;
 import frc.lib.util.DriveSignal;
 import frc.lib.util.Path;
 import frc.lib.util.RigidTransform2d;
 import frc.lib.util.Rotation2d;
-
 import frc.lib.util.SynchronousPID;
-
-import frc.lib.util.Path;
-import frc.lib.util.Translation2d;
-import frc.lib.util.Path.Waypoint;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants;
+import frc.robot.Kinematics;
+import frc.robot.RobotState;
+import frc.robot.loops.Loop;
+import frc.robot.loops.Looper;
 
 /**
  * The robot's drivetrain, which implements the Superstructure abstract class.
@@ -61,19 +49,21 @@ public class Drive extends Subsystem {
         OPEN_LOOP, BASE_LOCKED, VELOCITY_SETPOINT, VELOCITY_HEADING_CONTROL, PATH_FOLLOWING_CONTROL
     }
 
-    private  TalonFX leftMaster_, rightMaster_, leftChild_ ,rightChild_;
+    private  TalonFX leftMaster_, rightMaster_;
+	private final TalonFX leftChild_;
+	private final TalonFX rightChild_;
     //private CANCoder leftEncoder, rightEncoder;
     private boolean isBrakeMode_ = true;
-    private Solenoid shifter_;
+    private final Solenoid shifter_;
 
     private final AHRS gyro_;
     
-   
+    private final DigitalInput leftBarSensor, rightBarSensor;
 
     private DriveControlState driveControlState_;
     private VelocityHeadingSetpoint velocityHeadingSetpoint_;
     private AdaptivePurePursuitController pathFollowingController_;
-    private SynchronousPID velocityHeadingPid_;
+    private final SynchronousPID velocityHeadingPid_;
 
     // The main control loop (an implementation of Loop), which cycles
     // through different robot states
@@ -143,6 +133,9 @@ public class Drive extends Subsystem {
 
 
         gyro_ = new AHRS(SPI.Port.kMXP);
+
+        leftBarSensor = new DigitalInput(Constants.kDriveLeftPhotoeyePort);
+        rightBarSensor = new DigitalInput(Constants.kDriveRightPhotoeyePort);
       
        
         // Get status at 100Hz
@@ -187,7 +180,7 @@ public class Drive extends Subsystem {
         setOpenLoop(DriveSignal.NEUTRAL);
     }
 
-    public static TalonFX tuneLoops(TalonFX talon, int id, double P, double I, double D, double F,int Izone,double Ramp){
+    public static TalonFX tuneLoops(final TalonFX talon, final int id, final double P, final double I, final double D, final double F,final int Izone,final double Ramp){
 
         talon.config_kP(id, P);
         talon.config_kI(id, I);
@@ -209,7 +202,7 @@ public class Drive extends Subsystem {
         rightMaster_.set(-right);
     }*/
 
-    public synchronized void setOpenLoop(DriveSignal signal) {
+    public synchronized void setOpenLoop(final DriveSignal signal) {
         if (driveControlState_ != DriveControlState.OPEN_LOOP) {
            
             driveControlState_ = DriveControlState.OPEN_LOOP;
@@ -234,13 +227,13 @@ public class Drive extends Subsystem {
         
     }
 
-    public synchronized void setVelocitySetpoint(double left_inches_per_sec, double right_inches_per_sec) {
+    public synchronized void setVelocitySetpoint(final double left_inches_per_sec, final double right_inches_per_sec) {
         configureTalonsForSpeedControl();
         driveControlState_ = DriveControlState.VELOCITY_SETPOINT;
         updateVelocitySetpoint(left_inches_per_sec, right_inches_per_sec);
     }
 
-    public synchronized void setVelocityHeadingSetpoint(double forward_inches_per_sec, Rotation2d headingSetpoint) {
+    public synchronized void setVelocityHeadingSetpoint(final double forward_inches_per_sec, final Rotation2d headingSetpoint) {
         if (driveControlState_ != DriveControlState.VELOCITY_HEADING_CONTROL) {
             configureTalonsForSpeedControl();
             driveControlState_ = DriveControlState.VELOCITY_HEADING_CONTROL;
@@ -260,7 +253,7 @@ public class Drive extends Subsystem {
      * @param reversed
      * @see frc.lib.util/Path.java
      */
-    public synchronized void followPath(Path path, boolean reversed) {
+    public synchronized void followPath(final Path path, final boolean reversed) {
         if (driveControlState_ != DriveControlState.PATH_FOLLOWING_CONTROL) {
             configureTalonsForSpeedControl();
             driveControlState_ = DriveControlState.PATH_FOLLOWING_CONTROL;
@@ -324,7 +317,7 @@ public class Drive extends Subsystem {
         return isHighGear_;
     }
 
-   public void setHighGear(boolean high_gear) {
+   public void setHighGear(final boolean high_gear) {
         isHighGear_ = high_gear;
         shifter_.set(!high_gear);
     }
@@ -360,8 +353,8 @@ public class Drive extends Subsystem {
         //SmartDashboard.putNumber("gyro_center", getGyro().getCenter());
         SmartDashboard.putNumber("heading_error", mLastHeadingErrorDegrees);
      
-       // SmartDashboard.putBoolean("line_sensor1", lineSensor1_.get());
-        //SmartDashboard.putBoolean("line_sensor2", lineSensor2_.get());
+        SmartDashboard.putBoolean("left_bar_sensor", getLeftBarSensor());
+        SmartDashboard.putBoolean("right_bar_sensor", getRightBarSensor());
     }
 
     @Override
@@ -385,7 +378,7 @@ public class Drive extends Subsystem {
         }
     }
 
-    private synchronized void updateVelocitySetpoint(double left_inches_per_sec, double right_inches_per_sec) {
+    private synchronized void updateVelocitySetpoint(final double left_inches_per_sec, final double right_inches_per_sec) {
         if (driveControlState_ == DriveControlState.VELOCITY_HEADING_CONTROL
                 || driveControlState_ == DriveControlState.VELOCITY_SETPOINT
                 || driveControlState_ == DriveControlState.PATH_FOLLOWING_CONTROL
@@ -400,19 +393,19 @@ public class Drive extends Subsystem {
     }
 
     private void updateVelocityHeadingSetpoint() {
-        Rotation2d actualGyroAngle = getGyroAngle();
+        final Rotation2d actualGyroAngle = getGyroAngle();
 
         mLastHeadingErrorDegrees = velocityHeadingSetpoint_.getHeading().rotateBy(actualGyroAngle.inverse())
                 .getDegrees();
 
-        double deltaSpeed = velocityHeadingPid_.calculate(mLastHeadingErrorDegrees);
+        final double deltaSpeed = velocityHeadingPid_.calculate(mLastHeadingErrorDegrees);
         updateVelocitySetpoint(velocityHeadingSetpoint_.getLeftSpeed() + deltaSpeed / 2,
                 velocityHeadingSetpoint_.getRightSpeed() - deltaSpeed / 2);
     }
 
     private void updatePathFollower() {
-        RigidTransform2d robot_pose = RobotState.getInstance().getLatestFieldToVehicle().getValue();
-        RigidTransform2d.Delta command = pathFollowingController_.update(robot_pose, Timer.getFPGATimestamp());
+        final RigidTransform2d robot_pose = RobotState.getInstance().getLatestFieldToVehicle().getValue();
+        final RigidTransform2d.Delta command = pathFollowingController_.update(robot_pose, Timer.getFPGATimestamp());
         Kinematics.DriveVelocity setpoint = Kinematics.inverseKinematics(command);
 
         // Scale the command to respect the max velocity limits
@@ -420,7 +413,7 @@ public class Drive extends Subsystem {
         max_vel = Math.max(max_vel, Math.abs(setpoint.left));
         max_vel = Math.max(max_vel, Math.abs(setpoint.right));
         if (max_vel > Constants.kPathFollowingMaxVel) {
-            double scaling = Constants.kPathFollowingMaxVel / max_vel;
+            final double scaling = Constants.kPathFollowingMaxVel / max_vel;
             setpoint = new Kinematics.DriveVelocity(setpoint.left * scaling, setpoint.right * scaling);
         }
         updateVelocitySetpoint(setpoint.left, setpoint.right);
@@ -430,23 +423,23 @@ public class Drive extends Subsystem {
    
 
 
-    private static double rotationsToInches(double rotations) {
+    private static double rotationsToInches(final double rotations) {
         return rotations * (Constants.kDriveWheelDiameterInches * Math.PI);
     }
 
-    private static double rpmToInchesPerSecond(double rpm) {
+    private static double rpmToInchesPerSecond(final double rpm) {
         return rotationsToInches(rpm) / 60;
     }
 
-    private static double inchesToRotations(double inches) {
+    private static double inchesToRotations(final double inches) {
         return inches / (Constants.kDriveWheelDiameterInches * Math.PI);
     }
 
-    private static double inchesPerSecondToRpm(double inches_per_second) {
+    private static double inchesPerSecondToRpm(final double inches_per_second) {
         return inchesToRotations(inches_per_second) * 60;
     }
 
-    public void setBrakeMode(boolean on) {
+    public void setBrakeMode(final boolean on) {
         if (isBrakeMode_ != on) {
             if(on){
                 leftMaster_.setNeutralMode(NeutralMode.Brake);
@@ -458,6 +451,14 @@ public class Drive extends Subsystem {
           
             isBrakeMode_ = on;
         }
+    }
+
+    public boolean getLeftBarSensor(){
+        return leftBarSensor.get();
+    }
+
+    public boolean getRightBarSensor(){
+        return rightBarSensor.get();
     }
 
     /**
@@ -472,7 +473,7 @@ public class Drive extends Subsystem {
         private final Rotation2d headingSetpoint_;
 
         // Constructor for straight line motion
-        public VelocityHeadingSetpoint(double leftSpeed, double rightSpeed, Rotation2d headingSetpoint) {
+        public VelocityHeadingSetpoint(final double leftSpeed, final double rightSpeed, final Rotation2d headingSetpoint) {
             leftSpeed_ = leftSpeed;
             rightSpeed_ = rightSpeed;
             headingSetpoint_ = headingSetpoint;
@@ -492,13 +493,13 @@ public class Drive extends Subsystem {
     }
 
     @Override
-    public void registerEnabledLoops(Looper in) {
+    public void registerEnabledLoops(final Looper in) {
         in.register(mLoop);
     }
 
     double startTestTime=0;
     @Override
-    public boolean test(double now) {
+    public boolean test(final double now) {
         
 
         return true;

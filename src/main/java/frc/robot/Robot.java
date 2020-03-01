@@ -14,6 +14,7 @@ import frc.robot.StateMachines.Shooter;
 import frc.robot.Vision.TurretCam;
 import frc.robot.Vision.TurretCam.LightMode;
 import frc.robot.auto.AutoModeExecuter;
+import frc.robot.auto.modes.ClimbMode;
 import frc.robot.loops.Looper;
 import frc.robot.loops.RobotStateEstimator;
 import frc.robot.loops.VisionProcessor;
@@ -45,6 +46,10 @@ public class Robot extends TimedRobot {
    Intake mIntake = Intake.getInstance();
    Flywheel mFlywheel = Flywheel.getInstance();
    FeederFlywheel mFeederFlywheel = FeederFlywheel.getInstance();
+   Lift mLift = Lift.getInstance();
+   Winch mWinch = Winch.getInstance();
+   Leveller mLeveller = Leveller.getInstance();
+
 
     // Other parts of the robot
     CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
@@ -53,7 +58,8 @@ public class Robot extends TimedRobot {
     RobotState mRobotState = RobotState.getInstance();
 
         List<Subsystem> subsystemsList = Arrays.asList(Drive.getInstance(), mFlywheel, 
-        Hood.getInstance(), Turret.getInstance(), mShooter, mIntake, BeltClamp.getInstance(), Indexer.getInstance(), FeederBelt.getInstance(), mFeederFlywheel);
+        Hood.getInstance(), Turret.getInstance(), mShooter, mIntake, BeltClamp.getInstance(), 
+        Indexer.getInstance(), FeederBelt.getInstance(), mFeederFlywheel, mLift, mWinch, mLeveller);
        // Create subsystem manager
        private final SubsystemManager mSubsystemManager = new SubsystemManager(subsystemsList);
    
@@ -193,6 +199,10 @@ public class Robot extends TimedRobot {
             }
             mAutoModeExecuter = null;
 
+            mAutoModeExecuter = new AutoModeExecuter();
+            mAutoModeExecuter.setAutoMode(new ClimbMode());
+            
+
             // Reset drive
             mDrive.resetEncoders();
 
@@ -265,7 +275,7 @@ public class Robot extends TimedRobot {
             throw t;
         }
     }
-
+boolean climbing=false;
     /**
      * To control the robot, the code sets the desired state of the robot (a
      * state machine). The robot will constantly compare the desired and actual
@@ -276,7 +286,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         try {
-            
+            if(!climbing){
             double throttle = mControls.getThrottle();
             double turn = mCheesyDriveHelper.handleDeadband(mControls.getTurn(), .05) ;
             if (mControls.getTractionControl()) {
@@ -371,7 +381,18 @@ public class Robot extends TimedRobot {
             if(mControls.fillBalls()) mRobotState.fillBalls();
 
             if(mControls.addCSVValue()) mShooter.addHoodCSV();
+        }
+            if(mControls.getStartClimb()){
+                 mAutoModeExecuter.start();
+                climbing=true;
+            }
+            else if(mControls.getStopClimb()){
+                 mAutoModeExecuter.stop();
+                 climbing=false;
+            }
 
+            mLeveller.set(mControls.getBalanceJog());
+        
            allPeriodic();
      
         } catch (Throwable t) {
@@ -392,19 +413,29 @@ public class Robot extends TimedRobot {
     }
 
    
-    int period = 0;
+   // int period = 0;
     @Override
     public void testInit() {
-        period=0;
+    
+
+
     }
   
     @Override
     public void testPeriodic() {
-        if(period<subsystemsList.size()){
-        Subsystem system = subsystemsList.get(period);
+        
+        mLeveller.set(mControls.getBalanceJog());
+        if(Math.abs(mControls.getLiftJog())>.1)mLift.setOpenLoop(mControls.getLiftJog());
+        else if(mControls.getStartClimb()) mLift.setDesiredHeight(35);
+        else mLift.setOpenLoop(0);
 
-        if(system.test(Timer.getFPGATimestamp())) period++;
-        }
+
+        if(Math.abs(mControls.getWinchJog())>.1)mWinch.setOpenLoop(mControls.getWinchJog());
+        else if(mControls.getStopClimb()) mWinch.setDesiredHeight(10);
+        else mWinch.setOpenLoop(0);
+
+
+        allPeriodic();
     }
 
   /**

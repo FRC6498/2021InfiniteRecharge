@@ -2,19 +2,17 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-
-
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.ControlBoard;
 import frc.robot.RobotState;
 import frc.robot.loops.Loop;
 import frc.robot.loops.Looper;
-import frc.robot.subsystems.BeltClamp.SystemState;
 
 /**
  
@@ -25,8 +23,8 @@ public class Intake extends Subsystem {
    
  
 
-    TalonSRX mTalon;
-    Solenoid mSolenoid;
+    VictorSPX mVictor;
+    DoubleSolenoid mSolenoid;
     
     
     
@@ -43,14 +41,14 @@ public class Intake extends Subsystem {
     }
 
     private Intake() {
-        mTalon = new TalonSRX(Constants.kIntakeTalonId);
+        mVictor = new VictorSPX(Constants.kIntakeVictorId);
 
-        mTalon.setNeutralMode(NeutralMode.Coast);
+        mVictor.setNeutralMode(NeutralMode.Coast);
 
-        mTalon.setInverted(true);
+        mVictor.setInverted(true);
 
-        mSolenoid = new Solenoid(Constants.intakeSolenoidId);
-        mSolenoid.set(false);
+        mSolenoid = new DoubleSolenoid(Constants.intakeSolenoidOneId, Constants.intakeSolenoidTwoId);
+        mSolenoid.set(Value.kReverse);
 
     }
 
@@ -88,7 +86,7 @@ public class Intake extends Subsystem {
                 SystemState newState;
                 switch (mSystemState) {
                case IDLE:
-                    newState = handleIdle();
+                    newState = handleIdle(now, mCurrentStateStartTime);
                     break;
                 case INTAKE_GROUND:
                     newState = handleIntakeGround(now, mCurrentStateStartTime);
@@ -132,18 +130,48 @@ public class Intake extends Subsystem {
     
     
     
-    
-    
-    private synchronized SystemState handleIdle(){
+   
+    double idleWaitTime=2.5;
+    boolean idleInitialized=false;
+    double idleInitializedTime = 0;
+
+    double pistonOnTime = .2;
+    boolean pistonDone = false;
+
+
+    private synchronized SystemState handleIdle(double now, double startTime){
         if(mStateChanged){
             stop();
+            idleInitialized=false;
+            idleInitializedTime=0;
+            pistonDone=false;
         }
+
+        if(!idleInitialized&&now-startTime>=idleWaitTime){
+            idleInitialized=true;
+            idleInitializedTime=now;
+            mSolenoid.set(Value.kForward);
+            System.out.println("Intake solenoid forward");
+        }
+
+        if(!pistonDone&&idleInitialized&&now-idleInitializedTime>=pistonOnTime){
+            mSolenoid.set(Value.kOff);
+            System.out.println("Intake solenoid off");
+            pistonDone=true;
+        }
+
+        
+
+
+
 
         switch(mWantedState){
             case WANT_INTAKE_GROUND:
                 return SystemState.INTAKE_GROUND;
             case WANT_INTAKE_LOAD:
                 return SystemState.INTAKE_LOAD;
+            case WANT_PLOW:
+                return SystemState.PLOW;
             default:
                 return SystemState.IDLE;
         }
@@ -156,7 +184,7 @@ public class Intake extends Subsystem {
     private synchronized SystemState handleIntakeGround(double now, double startTime){
 
         if(mStateChanged){
-            mSolenoid.set(true);
+            mSolenoid.set(Value.kForward);
            setOpenLoop(Constants.kIntakeGroundSpeed);
         }
         double currentThreshold = Constants.kIntakeGroundCurrentThreshold;
@@ -168,22 +196,22 @@ public class Intake extends Subsystem {
             currentThreshold = currentThreshold+Constants.kIntakeCurrentRateOfChange*avgVelocity;
         }
 
-        if(now-startTime>=Constants.kIntakeActuationTime){
+        //if(now-startTime>=Constants.kIntakeActuationTime){
                
            
-            if(ballSeenStartTime==0&&getCurrent()>=currentThreshold ){
-                ballSeenStartTime=now;
-            //  System.out.println("Intake ball detected");
-                mRobotState.setIntakeBalls(1);
-                ControlBoard.getInstance().setRumble(.75);
-                rumbleStartTime=now; //rumble on when ball seen
+          //  if(ballSeenStartTime==0&&getCurrent()>=currentThreshold ){
+         //       ballSeenStartTime=now;
+         //   //  System.out.println("Intake ball detected");
+          //      mRobotState.setIntakeBalls(1);
+         //       ControlBoard.getInstance().setRumble(.75);
+        //        rumbleStartTime=now; //rumble on when ball seen
 
-            }else if(now-ballSeenStartTime>=Constants.kIntakeGroundTimeThreshold){
-                ballSeenStartTime = 0;
+        //    }else if(now-ballSeenStartTime>=Constants.kIntakeGroundTimeThreshold){
+        //        ballSeenStartTime = 0;
 
-            }
+        //    }
        
-        }
+      //  }
 
         if(rumbleStartTime!=0&&now-rumbleStartTime>=rumbleTime){
             ControlBoard.getInstance().setRumble(0);
@@ -193,7 +221,7 @@ public class Intake extends Subsystem {
         if(actuationStartTime!=0&&now-actuationStartTime>=Constants.kIntakeActuationTime){
             if(mWantedState==WantedState.WANT_INTAKE_GROUND) mWantedState=WantedState.WANT_IDLE;
             System.out.println("Intake reached max balls");
-        }else if(actuationStartTime!=0){
+        }else if(actuationStartTime!=0){ 
         }else if(mRobotState.getTotalBalls()>=5){
             actuationStartTime=now;
         }
@@ -209,6 +237,8 @@ public class Intake extends Subsystem {
                 return SystemState.INTAKE_GROUND;
             case WANT_INTAKE_LOAD:
                 return SystemState.INTAKE_LOAD;
+            case WANT_PLOW:
+                return SystemState.PLOW;
             default:
                 return SystemState.IDLE;
         }
@@ -221,6 +251,8 @@ public class Intake extends Subsystem {
                 return SystemState.INTAKE_GROUND;
             case WANT_INTAKE_LOAD:
                 return SystemState.INTAKE_LOAD;
+            case WANT_PLOW:
+                return SystemState.PLOW;
             default:
                 return SystemState.IDLE;
         }
@@ -230,7 +262,7 @@ public class Intake extends Subsystem {
 
 
         if(mStateChanged){
-            mSolenoid.set(true);
+            mSolenoid.set(Value.kForward);
            setOpenLoop(-Constants.kIntakePlowSpeed);
         }
 
@@ -239,6 +271,8 @@ public class Intake extends Subsystem {
                 return SystemState.INTAKE_GROUND;
             case WANT_INTAKE_LOAD:
                 return SystemState.INTAKE_LOAD;
+            case WANT_PLOW:
+                return SystemState.PLOW;
             default:
                 return SystemState.IDLE;
         }
@@ -246,28 +280,28 @@ public class Intake extends Subsystem {
 
 
    public boolean getIntakeDown(){
-       return mSolenoid.get();
+       return mSolenoid.get()==Value.kForward;
    }
   
     synchronized void setOpenLoop(double speed) {
-       mTalon.set(ControlMode.PercentOutput, speed);
+       mVictor.set(ControlMode.PercentOutput, speed);
     }
 
-   synchronized double getCurrent(){
-       return mTalon.getStatorCurrent();
-   }
+   //synchronized double getCurrent(){
+    //   return mVictor.
+  // }
     
 
     @Override
     public synchronized void stop() {
         setOpenLoop(0);
-        mSolenoid.set(false);
+        mSolenoid.set(Value.kReverse);
     }
 
     @Override
     public void outputToSmartDashboard() {
       
-       SmartDashboard.putNumber("Intake Current", getCurrent());
+      // SmartDashboard.putNumber("Intake Current", getCurrent());
     }
 
     @Override
@@ -290,7 +324,7 @@ public class Intake extends Subsystem {
         double timeElapsed = now-startTestTime;
 
         if(timeElapsed<3){
-            mSolenoid.set(true);
+            mSolenoid.set(Value.kForward);
         }else if(timeElapsed<6){
             setOpenLoop(Constants.kIntakeGroundSpeed);
         }else if(timeElapsed<8){

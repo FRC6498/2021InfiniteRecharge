@@ -33,7 +33,7 @@ public class DriveStraightAction implements Action {
     @Override
     public void start() {
         startingDistance = getCurrentDistance();
-       // mDrive.setHighGear(false);
+        mDrive.setHighGear(false);
         mDrive.setVelocityHeadingSetpoint(mVelocity, Rotation2d.fromDegrees(mHeading));
     }
 

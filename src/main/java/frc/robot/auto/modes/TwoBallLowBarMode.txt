@@ -1,4 +1,4 @@
-package frc.robot.auto.modes;
+/* frc.robot.auto.modes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,7 +8,10 @@ import frc.robot.auto.AutoModeBase;
 import frc.robot.auto.AutoModeEndedException;
 import frc.robot.auto.actions.*;
 import frc.robot.subsystems.Drive;
-
+import frc.robot.subsystems.ShooterAimingParameters;
+import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.UtilityArm;
+import frc.robot.subsystems.Superstructure.WantedState;
 import frc.lib.util.Path;
 import frc.lib.util.Path.Waypoint;
 import frc.lib.util.Rotation2d;
@@ -17,8 +20,8 @@ import frc.lib.util.Translation2d;
 /**
  * This routine goes under the low bar and attempts to fire two balls.
  */
-public class TwoBallLowBarMode{ //extends AutoModeBase {
-   /* Superstructure mSuperstructure = Superstructure.getInstance();
+public class TwoBallLowBarMode extends AutoModeBase {
+    Superstructure mSuperstructure = Superstructure.getInstance();
     Drive mDrive = Drive.getInstance();
 
     @Override
@@ -67,5 +70,6 @@ public class TwoBallLowBarMode{ //extends AutoModeBase {
         mSuperstructure.setWantedState(WantedState.WANT_TO_DEPLOY);
         mSuperstructure.setWantsToStopIntake();
         runAction(new SetArmModeAction(UtilityArm.WantedState.DRIVING));
-    }*/
+    }
 }
+*/

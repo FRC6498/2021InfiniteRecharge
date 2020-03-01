@@ -56,7 +56,8 @@ public class ControlBoard {
         turn=mDriver.getX(Hand.kLeft)*Constants.regularTurnReduction;
 
         if(Math.abs(turn)<.05) turn=0;
-
+        
+        
 
         if(mDriver.getTriggerAxis(Hand.kRight)>.05) {
             throttle=mDriver.getTriggerAxis(Hand.kRight);			
@@ -89,6 +90,7 @@ public class ControlBoard {
     
         zRotation = turn;
         
+      
     
         // Square the inputs (while preserving the sign) to increase fine control
         // while permitting full power.
@@ -125,6 +127,9 @@ public class ControlBoard {
         }
         double m_rightSideInvertMultiplier = 1.0;
 
+        if(throttle>.05) m_rightSideInvertMultiplier*=1.1;//larger than 1 for drift right.9; //bruh this is good
+         else if(throttle<.05) m_rightSideInvertMultiplier*=1.1;//.9; //dont touch, or i'm a beat ya
+
         leftMotorOutput=(limit(leftMotorOutput) * 1);
         rightMotorOutput=(limit(rightMotorOutput) * 1 * m_rightSideInvertMultiplier);
 
@@ -159,14 +164,9 @@ public class ControlBoard {
         return value;
     }
 
-
-    public boolean getTractionControl() {
-        return mDriver.getBButton();
+    public boolean getTractionControl(){
+        return mDriver.getBButtonPressed();
     }
-
-   public boolean getAlignWithLoadStation(){
-       return mDriver.getXButton();
-   }
     
    public boolean getLowGear(){
        return mDriver.getBumper(Hand.kRight);
@@ -186,6 +186,28 @@ public class ControlBoard {
    public boolean getPlow(){
        return mDriver.getPOV()==90;
    }
+//CLIMBING------------------
+   public boolean getStartClimb(){
+       return mDriver.getXButtonPressed();
+   }
+
+   public boolean getStopClimb(){
+       return mDriver.getYButtonPressed();
+   }
+
+   public double getLiftJog(){
+       return -mDriver.getY(Hand.kLeft);
+   }
+
+   public double getWinchJog(){
+       return -mDriver.getY(Hand.kRight);
+   }
+
+   public double getBalanceJog(){
+       return mDriver.getX(Hand.kLeft);
+   }
+
+
 
    //OPERATOR CONTROLS
 
@@ -232,23 +254,41 @@ public class ControlBoard {
         return mOperator.getBButtonPressed();
     }
 
-
+    boolean lastReadingAddBeltBall = false;
     public boolean addBeltBall(){
-
-        return mDriver.getAButtonPressed();//mOperator.getPOV()==90;
-
+        boolean currentReading = mOperator.getPOV()==90;
+        boolean result = buttonPressed(lastReadingAddBeltBall, currentReading);
+        lastReadingAddBeltBall = currentReading;
+        return result;
     }
 
+    boolean lastReadingSubtractBeltBall = false;
     public boolean subtractBeltBall(){
-        return mDriver.getYButtonPressed();//mOperator.getPOV()==270;
+        boolean currentReading = mOperator.getPOV()==270;
+        boolean result = buttonPressed(lastReadingSubtractBeltBall, currentReading);
+        lastReadingSubtractBeltBall = currentReading;
+        return result;
     }
 
+    boolean lastReadingAddFeederBall = false;
     public boolean addFeederBall(){
-        return mDriver.getBackButtonPressed();//mOperator.getPOV()==180;
+        boolean currentReading = mOperator.getPOV()==0;
+        boolean result = buttonPressed(lastReadingAddFeederBall, currentReading);
+        lastReadingAddFeederBall = currentReading;
+        return result;
     }
 
+    boolean lastReadingSubtractFeederBall = false;
     public boolean subtractFeederBall(){
-        return mDriver.getStartButtonPressed();//mOperator.getPOV()==0;
+        boolean currentReading = mOperator.getPOV()==180;
+        boolean result = buttonPressed(lastReadingSubtractFeederBall, currentReading);
+        lastReadingSubtractFeederBall = currentReading;
+        return result;
+    }
+
+
+    private boolean buttonPressed(boolean lastReading, boolean currentReading){
+        return lastReading==false && currentReading==true;
     }
 
     public boolean fillBalls(){

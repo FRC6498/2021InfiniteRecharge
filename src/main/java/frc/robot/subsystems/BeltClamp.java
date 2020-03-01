@@ -180,7 +180,8 @@ public class BeltClamp extends Subsystem {
     
     private synchronized SystemState handleIdle(){
         if(mStateChanged){
-            stop();
+           // stop();
+           setOpenLoop(-.1);
         }
 
         switch(mWantedState){

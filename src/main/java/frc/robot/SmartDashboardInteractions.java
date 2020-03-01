@@ -27,8 +27,8 @@ public class SmartDashboardInteractions {
 
     private static final String AUTO_BALLS_WORN = "auto_balls_worn";
 
-    private static final AutonOption DEFAULT_MODE = AutonOption.STAY_HIGH_ONE_BALL;
-    private static final AutonLane DEFAULT_LANE = AutonLane.LANE_4;
+    private static final AutonOption DEFAULT_MODE = AutonOption.SHOOT_THREE;
+    private static final AutonLane DEFAULT_LANE = AutonLane.LANE_1;
 
     public void initWithDefaults() {
         SmartDashboard.putBoolean(HOOD_TUNING_MODE, false);
@@ -85,7 +85,7 @@ public class SmartDashboardInteractions {
      * objects directly, so use this enum to project us from WPILIb.
      */
     enum AutonOption {
-        STAY_HIGH_ONE_BALL_DRIVE_BACK("No Drop Drive Back"), //
+       /* STAY_HIGH_ONE_BALL_DRIVE_BACK("No Drop Drive Back"), //
         STAY_HIGH_ONE_BALL("No Drop Stay"), //
         GET_LOW_ONE_BALL("Portcullis - STOP"), //
         GET_LOW_COME_BACK_LEFT("Portcullis - Come back left"), //
@@ -94,7 +94,8 @@ public class SmartDashboardInteractions {
         CDF_COME_BACK_LEFT("CDF - Come back left"), //
         CDF_COME_BACK_RIGHT("CDF - Come back right"), //
         TWO_BALL_LOW_BAR("Low Bar - Two Ball"), //
-        TWO_BALL_CLASS_BD("Class B/D - Two Ball"), //
+        TWO_BALL_CLASS_BD("Class B/D - Two Ball"), //*/
+        SHOOT_THREE("Shoot Three"),
         STAND_STILL("Stand Still"), //
         TEST_DRIVE("TEST ONLY Driving");
 
@@ -119,7 +120,7 @@ public class SmartDashboardInteractions {
 
     private ShooterAimingParameters getAimingHintForLane(AutonLane lane) {
         if (lane == AutonLane.LANE_1) {
-            return new ShooterAimingParameters(160.0, Rotation2d.fromDegrees(-45));
+            return new ShooterAimingParameters(8*12, Rotation2d.fromDegrees(0));
         } else if (lane == AutonLane.LANE_2) {
             return new ShooterAimingParameters(150.0, Rotation2d.fromDegrees(-30));
         } else if (lane == AutonLane.LANE_3) {
@@ -133,10 +134,10 @@ public class SmartDashboardInteractions {
 
     private AutoModeBase createAutoMode(AutonOption autonOption, AutonLane autonLane) {
         switch (autonOption) {
-        case STAY_HIGH_ONE_BALL:
-            return new StayHighOneBall(false);
-        case STAY_HIGH_ONE_BALL_DRIVE_BACK:
-            return new StayHighOneBall(true);
+     //   case STAY_HIGH_ONE_BALL:
+            //return new StayHighOneBall(false);
+       // case STAY_HIGH_ONE_BALL_DRIVE_BACK:
+           // return new StayHighOneBall(true);
       /*  case GET_LOW_ONE_BALL:
             return new GetLowOneBallMode(getAimingHintForLane(autonLane), false, false);
         case GET_LOW_COME_BACK_LEFT:
@@ -153,6 +154,8 @@ public class SmartDashboardInteractions {
             return new TwoBallLowBarMode();
         case TWO_BALL_CLASS_BD:
             return new TwoBallClassBDMode(getAimingHintForLane(autonLane));*/
+        case SHOOT_THREE:
+            return new ShootThreeMode(getAimingHintForLane(autonLane));
         case TEST_DRIVE:
             return new AutoModeBase() {
                 @Override

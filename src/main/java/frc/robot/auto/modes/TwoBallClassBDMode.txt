@@ -4,7 +4,10 @@ import frc.robot.auto.AutoModeBase;
 import frc.robot.auto.AutoModeEndedException;
 import frc.robot.auto.actions.*;
 import frc.robot.subsystems.Drive;
-
+import frc.robot.subsystems.ShooterAimingParameters;
+import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.WantedState;
+import frc.robot.subsystems.UtilityArm;
 import frc.lib.util.Path;
 import frc.lib.util.RigidTransform2d;
 import frc.lib.util.Translation2d;
@@ -15,19 +18,19 @@ import java.util.List;
 /**
  * This mode goes over the rock wall and tries to fire two balls
  */
-public class TwoBallClassBDMode{ //extends AutoModeBase {
-    
+public class TwoBallClassBDMode extends AutoModeBase {
+    ShooterAimingParameters mHint;
 
-    /*Drive mDrive = Drive.getInstance();
-   
+    Drive mDrive = Drive.getInstance();
+    Superstructure mSuperstructure = Superstructure.getInstance();
 
     public static final double DISTANCE_TO_DROP_ARM = 130;
     public static final double DISTANCE_TO_SLOW_DOWN = 50;
     public static final double DISTANCE_TO_START_AIMING = 150;
     public static final double TOTAL_DISTANCE_TO_DRIVE = 185;
 
-    public TwoBallClassBDMode() {
-        
+    public TwoBallClassBDMode(ShooterAimingParameters hint) {
+        mHint = hint;
     }
 
     @Override
@@ -56,11 +59,13 @@ public class TwoBallClassBDMode{ //extends AutoModeBase {
 
         // Shoot ball
         runAction(new WaitAction(.25));
-       
-       
+        runAction(new ShootWhenReadyAction());
+        mSuperstructure.setWantedState(Superstructure.WantedState.WANT_TO_KEEP_SPINNING);
+        runAction(new SetArmModeAction(UtilityArm.WantedState.DRIVING));
 
         // Drive back to center line and intake ball
-      
+        mSuperstructure.setWantsToRunIntake();
+        mSuperstructure.deployIntake();
         runAction(new ParallelAction(Arrays.asList(new FollowPathAction(new Path(return_path), true),
                 new SeriesAction(Arrays.asList(new WaitForPathMarkerAction("WatchLine"), new WaitUntilLineAction())))));
         mDrive.stop();
@@ -91,7 +96,5 @@ public class TwoBallClassBDMode{ //extends AutoModeBase {
         runAction(new ShootWhenReadyAction());
         mSuperstructure.setWantedState(WantedState.WANT_TO_DEPLOY);
         mSuperstructure.setWantsToStopIntake();
-    }*/
-
-
+    }
 }

@@ -25,7 +25,7 @@ public class Constants {
     public static double kCameraYOffset = 0.0;
     public static double kCameraZOffset = 27;
     public static double kCameraPitchAngleDegrees = 30;//35.75; // calibrated 4/22
-    public static double kCameraYawAngleDegrees = -2.0;//-1.0;
+    public static double kCameraYawAngleDegrees = -3;//-2.0;//-1.0; -- positive to make it aim more left
     public static double kCameraDeadband = 0.0;
 
     // Goal tracker constants
@@ -54,7 +54,7 @@ public class Constants {
 
     public static double kDriveRampRate=.3;
 
-    public static final double regularTurnReduction=.85;//.7;
+    public static final double regularTurnReduction=.75;//.7;
 
     public static final double kDriveSwivelReduction=1;//.85;
 
@@ -93,8 +93,8 @@ public class Constants {
 
     //Indexer Constants
     public static double kIndexRampRate = .1;
-    public static double kIndexOnlySpeed = .5;
-    public static double kIndexandBeltSpeed = .8;
+    public static double kIndexOnlySpeed = 1;//.5;
+    public static double kIndexandBeltSpeed = 1;//.8;
     
     //Feeder Belt Constatns
     public static double kFeederBeltRampRate=.1;
@@ -107,7 +107,7 @@ public class Constants {
     public static double kFeederFlywheelOnTargetTolerance = 200;
 
     //Intake Constatns
-    public static double kIntakeGroundSpeed = .75;
+    public static double kIntakeGroundSpeed = .75;//.75;
     public static boolean kIntakeVelocityCompensation=false;
     public static double kIntakeVelocityRateOfChange = .05;
     public static double kIntakeCurrentRateOfChange = .05;
@@ -220,8 +220,8 @@ public class Constants {
     // are attached to the master)
     // Motors
    
-    public static final int kLeftDriveMasterId = 3;
-    public static final int kLeftDriveChildId = 4;
+    public static final int kLeftDriveMasterId = 4;
+    public static final int kLeftDriveChildId = 3;
    
     public static final int kRightDriveMasterId = 1;
     public static final int kRightDriveChildId = 2;
@@ -233,18 +233,19 @@ public class Constants {
 
     public static int kIndexFalconId = 12;
 
-    public static int kFeederBeltVictorId = 7;
+    public static int kFeederBeltVictorId = 8;
 
     public static int kFeederFlywheelNeoId = 15;
 
-    public static int kIntakeTalonId = 5;
+    public static int kIntakeVictorId = 5;
 
-    public static int kBeltClampVictorId = 8;
+    public static int kBeltClampVictorId = 7;
    
 
     // SOLENOIDS
     public static final int shiftSolenoidId = 3;
-    public static final int intakeSolenoidId = 0;
+    public static final int intakeSolenoidOneId = 0;
+    public static final int intakeSolenoidTwoId=4;
     public static final int beltClampSolenoidId = 2;
 
     // Analog Inputs
@@ -259,7 +260,9 @@ public class Constants {
 
     public static final int kFeederBeltSensorPort = 1;
 
-    
+    public static final int kDriveLeftPhotoeyePort = 4;
+
+    public static final int kDriveRightPhotoeyePort = 5;
     
    
 
@@ -267,6 +270,37 @@ public class Constants {
     public static final double kOldBallHoodAdjustment = 2.4;
     public static final double kNewBallHoodAdjustment = 0.7;
    
-   
+
+
+    //EJ's STUFF :D :D :D :D :D :D :D :D :D
+      // -------------------- LIFT --------------------
+      public static final int kLiftFalconId = 11;
+      public final static double kLiftFalconKp = 0.01;
+      public final static double kLiftFalconKi = 0;
+      public final static double kLiftFalconKd = 0;
+      public final static double kLiftFalconKf = 0.1;
+      public static final int kBarSensorChannel = 1; 
+      public static final double kBarSensorThreshold = .5;
+      public static final double kLiftTicksPerInch = 2048*(10/1)*(1/(Math.PI*1.25)); 
+      public static final int kLiftMaxVelocity = (int) (21777*.15);
+      public static final int kLiftMaxAcceleration = (int) (5*kLiftTicksPerInch);
+      public static final double kLiftSoftLimit = 77;
+      public static final double kLiftStartingHeight=24.5;
+      public static final double kLiftTargetThreshold = .5;
+
+      // -------------------- WINCH --------------------
+      public static final int kWinchFalconId = 9;
+      public final static double kWinchFalconKp = 0.01;
+      public final static double kWinchFalconKi = 0;
+      public final static double kWinchFalconKd = 0;
+      public final static double kWinchFalconKf = 0;
+      public static final double kWinchTicksPerInch = 2048*(30/1)*(1/(Math.PI*1.25)); 
+      public static final int kWinchMaxVelocity = (int) (21777*.15);
+      public static final int kWinchMaxAcceleration = (int) (5*kWinchTicksPerInch);
+      public static final double kWinchSoftLimit = 25; //REMEMBER positive direction is when robot goes up
+      public static final double kWinchTargetThreshold = .5;
+
+      //-----------------------Leveler-------------------
+      public static final int kLevelVictorId = 6;
 
 }

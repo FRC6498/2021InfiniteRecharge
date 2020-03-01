@@ -93,16 +93,16 @@ public class Turret extends Subsystem {
         falcon_.config_kP(0, Constants.kTurretKp);
         falcon_.config_kI(0, Constants.kTurretKi);
         falcon_.config_kD(0, Constants.kTurretKd);
-        falcon_.config_kF(0, Constants.kTurretKf);
-        falcon_.config_IntegralZone(0, Constants.kTurretIZone);
+falcon_.config_kF(0, Constants.kTurretKf);
+       falcon_.config_IntegralZone(0, Constants.kTurretIZone);
         falcon_.configClosedloopRamp(Constants.kTurretRampRate);
         falcon_.configOpenloopRamp(Constants.kTurretRampRate);
 
-        falcon_.configPeakOutputReverse(-Constants.kTurretMaxPercentOut);
+       falcon_.configPeakOutputReverse(-Constants.kTurretMaxPercentOut);
         falcon_.configPeakOutputForward(Constants.kTurretMaxPercentOut);
 
         falcon_.configNominalOutputForward(0);
-        falcon_.configNominalOutputReverse(0);
+       falcon_.configNominalOutputReverse(0);
 
         falcon_.configAllowableClosedloopError(0, Constants.kTurretAllowableError);
 
@@ -114,7 +114,7 @@ public class Turret extends Subsystem {
         // We use soft limits to make sure the turret doesn't try to spin too
         // far.
         falcon_.configForwardSoftLimitEnable(true);//.enableForwardSoftLimit(true);
-        falcon_.configReverseSoftLimitEnable(true);
+       falcon_.configReverseSoftLimitEnable(true);
         falcon_.configForwardSoftLimitThreshold((int) (Constants.kSoftMaxTurretAngle / (360.0 / Constants.kTurretTicksPerRotation)));//setForwardSoftLimit(Constants.kSoftMaxTurretAngle / (360.0 * Constants.kTurretRotationsPerTick));
         falcon_.configReverseSoftLimitThreshold((int) (Constants.kSoftMinTurretAngle / (360.0 / Constants.kTurretTicksPerRotation)));//setReverseSoftLimit(Constants.kSoftMinTurretAngle / (360.0 * Constants.kTurretRotationsPerTick));
     }
