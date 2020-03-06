@@ -5,6 +5,6 @@ C:\Users\lukeo\OneDrive\Robotics Club\PROGRAMMING\Repositories\2020InfiniteRecha
 Name:
 HOOD-LOGS
 Note about this tuning:
-Castle
+Bloomington
 Save Location:
 C:\Users\lukeo\OneDrive\Robotics Club\PROGRAMMING\Repositories\2020InfiniteRecharge\csv_logging\PastLogs
