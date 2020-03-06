@@ -1,5 +1,6 @@
-package frc.robot.auto.actions;
+package frc.robot.auto.actions.ClimbingSpecificActions;
 
+import frc.robot.auto.actions.Action;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Winch;
 

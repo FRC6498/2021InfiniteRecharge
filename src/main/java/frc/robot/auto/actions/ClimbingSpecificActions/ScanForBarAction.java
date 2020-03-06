@@ -1,9 +1,10 @@
-package frc.robot.auto.actions;
+package frc.robot.auto.actions.ClimbingSpecificActions;
 
+import frc.robot.auto.actions.Action;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Lift;
-import edu.wpi.first.wpilibj.Timer;
-import frc.lib.util.DriveSignal;
+
+
 
 /**
  * AlignWithBarAction drives robot backwards using the sensors on the bottom of the chassis
@@ -41,17 +42,8 @@ double seenTime = 0;
     @Override
     public boolean isFinished() {
 
-      double now = Timer.getFPGATimestamp();
-
-      if(mLift.seesBar()) {
-        if(seenTime==0) seenTime=now;
-
-
-      }else{
-        seenTime=0;
-      }
-
-        return seenTime!=0&&(now-seenTime)>.2;
+   
+        return mLift.seesBar(); //required time taken care in lift
     }
 
     @Override

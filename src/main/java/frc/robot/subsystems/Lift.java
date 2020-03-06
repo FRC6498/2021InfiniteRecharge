@@ -14,6 +14,7 @@ import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.loops.Loop;
@@ -46,7 +47,7 @@ public class Lift extends Subsystem
         public void onLoop() {
             synchronized (Lift.this) {
                 
-               
+                seesBarUpdater();
                
             }
         }
@@ -154,11 +155,31 @@ public class Lift extends Subsystem
         return (Math.abs(getError()) < Constants.kLiftTargetThreshold);
     }
 
-    public boolean seesBar(){
+    boolean seesBarValue=false;
+    public boolean seesBarRaw(){
         return sensor_.getVoltage()>Constants.kBarSensorThreshold;
     }
 
-   
+    double seenTime = 0;
+    private void seesBarUpdater(){
+
+        double now = Timer.getFPGATimestamp();
+
+        if(seesBarRaw()) {
+          if(seenTime==0) seenTime=now;
+  
+  
+        }else{
+          seenTime=0;
+        }
+  
+          seesBarValue = seenTime!=0&&(now-seenTime)>Constants.kBarSensorTimeThreshold;
+          
+    }
+
+    public synchronized boolean seesBar(){
+        return seesBarValue;
+    }
 
     @Override
     public synchronized void stop() {

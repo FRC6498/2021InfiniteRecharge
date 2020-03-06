@@ -1,5 +1,6 @@
-package frc.robot.auto.actions;
+package frc.robot.auto.actions.ClimbingSpecificActions;
 
+import frc.robot.auto.actions.Action;
 import frc.robot.subsystems.Drive;
 import frc.lib.util.DriveSignal;
 
@@ -25,8 +26,6 @@ public class AlignWithBarAction implements Action {
 
     @Override
     public void start() {
-       leftSeen=false;
-       rightSeen=false;
         mDrive.setHighGear(false);
         mDrive.setOpenLoop(new DriveSignal(-speed, -speed));
     }
@@ -36,7 +35,7 @@ public class AlignWithBarAction implements Action {
     }
 
 
-    boolean leftSeen=false, rightSeen=false;
+
 
     @Override
     public boolean isFinished() {
@@ -44,20 +43,24 @@ public class AlignWithBarAction implements Action {
         double leftSpeed= -speed;
         double rightSpeed = -speed;
 
-        if(mDrive.getLeftBarSensor()) leftSeen=true;
+        boolean leftSeen = mDrive.getLeftBarSensor();
+        boolean rightSeen = mDrive.getRightBarSensor();
 
-        if(mDrive.getRightBarSensor()) rightSeen=true;
+   
 
+        if(leftSeen)leftSpeed=-.15;
 
-        if(leftSeen)leftSpeed=-leftSpeed;
+        if(rightSeen)rightSpeed=-.15;
 
-        if(rightSeen)rightSpeed=-rightSpeed;
-
-        if(leftSeen&&rightSeen) return true;
+        if(leftSeen&&rightSeen){
+            mDrive.setOpenLoop(new DriveSignal(0, 0));
+             return true;
+        }else{
         
         mDrive.setOpenLoop(new DriveSignal(rightSpeed, leftSpeed));
 
         return false;
+        }
     }
 
     @Override

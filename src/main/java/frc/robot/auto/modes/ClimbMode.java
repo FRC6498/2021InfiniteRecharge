@@ -1,17 +1,22 @@
 package frc.robot.auto.modes;
 
+import java.util.Arrays;
+
+import frc.lib.util.Rotation2d;
 import frc.robot.auto.AutoModeBase;
 import frc.robot.auto.AutoModeEndedException;
-import frc.robot.auto.actions.*;
+import frc.robot.auto.actions.ParallelAction;
+import frc.robot.auto.actions.PointTurretAction;
+import frc.robot.auto.actions.SeriesAction;
+import frc.robot.auto.actions.ClimbingSpecificActions.AlignWithBarAction;
+import frc.robot.auto.actions.ClimbingSpecificActions.DriveOnBarAction;
+import frc.robot.auto.actions.ClimbingSpecificActions.ScanForBarAction;
+import frc.robot.auto.actions.ClimbingSpecificActions.SetLiftHeightAction;
+import frc.robot.auto.actions.ClimbingSpecificActions.SetWinchHeightAction;
+import frc.robot.auto.actions.ClimbingSpecificActions.WaitForConfirmationAction;
+import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.ShooterAimingParameters;
-
-import frc.lib.util.Path;
-import frc.lib.util.Translation2d;
-import frc.lib.util.Path.Waypoint;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import frc.robot.subsystems.Turret;
 
 /**
  * In this autonomous routine, the robot crosses the cheval de frise. There are
@@ -32,25 +37,19 @@ public class ClimbMode extends AutoModeBase {
 
     @Override
     protected void routine() throws AutoModeEndedException {
+      Turret.getInstance().setDesiredAngle(Rotation2d.fromDegrees(45));
 
-     // runAction(new AlignWithBarAction(-.1)); //make 2 parallel 
-     runAction(new SeriesAction(Arrays.asList(new SetLiftHeightAction(48)
-     ,new ScanForBarAction(.25),
-     
-     new DriveStraightAction(-12.5, -9) //turret is the front so to climb drive backwards
-     
-     
-     )));
-     
-     
-     
-     //runAction(new SetLiftHeightAction(48)); //~bar height 29.5 
-    //  runAction(new ScanForBarAction(.25));
-     // runAction(new DriveStraightAction(8, 5));
-     // runAction(new SetLiftHeightAction(0));
-     // runAction(new SetWinchHeightAction(10));
+      runAction(new SeriesAction(Arrays.asList(
+        new ParallelAction(Arrays.asList( new AlignWithBarAction(-.15), 
+                                          new SetLiftHeightAction(48))),
+        new ScanForBarAction(.175),//.2
+        new DriveOnBarAction(-10.5, -4.5, Drive.getInstance().getGyroAngle().getDegrees() ,.15), // 12.5 turret is the front so to climb drive backwards
+        new WaitForConfirmationAction(),
+        new ParallelAction(Arrays.asList( new SetLiftHeightAction(0)/* , new SetWinchHeightAction(5)*/))
+      )));
+
+      
 
 
-        
     }
 }

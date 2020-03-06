@@ -1,11 +1,5 @@
 package frc.robot;
 
-import frc.lib.util.InterpolatingDouble;
-import frc.lib.util.InterpolatingTreeMap;
-import frc.lib.util.Rotation2d;
-import frc.robot.subsystems.ShooterAimingParameters;
-import edu.wpi.first.wpilibj.Solenoid;
-
 /**
  * A list of constants used by the rest of the robot code. This include physics
  * constants as well as constants determined through calibrations.
@@ -25,7 +19,7 @@ public class Constants {
     public static double kCameraYOffset = 0.0;
     public static double kCameraZOffset = 27;
     public static double kCameraPitchAngleDegrees = 30;//35.75; // calibrated 4/22
-    public static double kCameraYawAngleDegrees = -3;//-2.0;//-1.0; -- positive to make it aim more left
+    public static double kCameraYawAngleDegrees = -3.0;//-3;//-2.0;//-1.0; -- positive to make it aim more left
     public static double kCameraDeadband = 0.0;
 
     // Goal tracker constants
@@ -54,9 +48,9 @@ public class Constants {
 
     public static double kDriveRampRate=.3;
 
-    public static final double regularTurnReduction=.75;//.7;
+    public static final double regularTurnReduction=.6;//.7;
 
-    public static final double kDriveSwivelReduction=1;//.85;
+    public static final double kDriveSwivelReduction=.85;//.85;
 
   
     // Hood constants
@@ -98,16 +92,16 @@ public class Constants {
     
     //Feeder Belt Constatns
     public static double kFeederBeltRampRate=.1;
-    public static double kFeederBeltLoadingSpeed=.6;
+    public static double kFeederBeltLoadingSpeed=.8;//.6
     public static double kFeederBeltDeployingSpeed=1;
 
     //Feeder Flywheel Constatns
     public static double kFeederFlywheelShootRPM = 3000;
-    public static double kFeederFlywheelActuationTime = 1;
-    public static double kFeederFlywheelOnTargetTolerance = 200;
+    public static double kFeederFlywheelActuationTime = .3;//.75;
+    public static double kFeederFlywheelOnTargetTolerance = 100;
 
     //Intake Constatns
-    public static double kIntakeGroundSpeed = .75;//.75;
+    public static double kIntakeGroundSpeed = .95;//.75;
     public static boolean kIntakeVelocityCompensation=false;
     public static double kIntakeVelocityRateOfChange = .05;
     public static double kIntakeCurrentRateOfChange = .05;
@@ -118,11 +112,12 @@ public class Constants {
     
     //Belt Clamp Constants
     public static double kBeltClampConveySpeed=.6;
-    public static double kBeltClampAgitationPeriod = 1;
-    public static double kBeltClampAgitationTime = 3;
-    public static double kBeltClampAgitationSpeed = .2;
-    public static double kBeltClampConveyTimeout = 15;
-    public static double kBeltClampIntakeClampTime = 2.5;
+
+    public static double kBeltClampAgitationPeriod = .5;
+    public static double kBeltClampAgitationTime = 2;
+    public static double kBeltClampAgitationSpeed = .45;
+    public static double kBeltClampConveyTimeout = 5;
+    public static double kBeltClampIntakeClampTime = 0;
 
      
 
@@ -247,6 +242,7 @@ public class Constants {
     public static final int intakeSolenoidOneId = 0;
     public static final int intakeSolenoidTwoId=4;
     public static final int beltClampSolenoidId = 2;
+    public static final int fistSolenoid = 1;
 
     // Analog Inputs
     public static final int kHoodEncoderAnalog = 0;
@@ -281,6 +277,7 @@ public class Constants {
       public final static double kLiftFalconKf = 0.1;
       public static final int kBarSensorChannel = 1; 
       public static final double kBarSensorThreshold = .5;
+      public static final double kBarSensorTimeThreshold = .2;//.2
       public static final double kLiftTicksPerInch = 2048*(10/1)*(1/(Math.PI*1.25)); 
       public static final int kLiftMaxVelocity = (int) (21777*.15);
       public static final int kLiftMaxAcceleration = (int) (5*kLiftTicksPerInch);
@@ -293,11 +290,11 @@ public class Constants {
       public final static double kWinchFalconKp = 0.01;
       public final static double kWinchFalconKi = 0;
       public final static double kWinchFalconKd = 0;
-      public final static double kWinchFalconKf = 0;
+      public final static double kWinchFalconKf = 0.1;
       public static final double kWinchTicksPerInch = 2048*(30/1)*(1/(Math.PI*1.25)); 
       public static final int kWinchMaxVelocity = (int) (21777*.15);
       public static final int kWinchMaxAcceleration = (int) (5*kWinchTicksPerInch);
-      public static final double kWinchSoftLimit = 25; //REMEMBER positive direction is when robot goes up
+      public static final double kWinchSoftLimit = 70; //REMEMBER positive direction is when robot goes up
       public static final double kWinchTargetThreshold = .5;
 
       //-----------------------Leveler-------------------

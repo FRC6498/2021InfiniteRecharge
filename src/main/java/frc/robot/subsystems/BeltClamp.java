@@ -28,7 +28,7 @@ public class BeltClamp extends Subsystem {
 
 
     VictorSPX mVictor;
-    Solenoid mSolenoid;
+    Solenoid mSolenoid, mFist;
     
     
     
@@ -52,6 +52,9 @@ public class BeltClamp extends Subsystem {
 
         mSolenoid = new Solenoid(Constants.beltClampSolenoidId);
         mSolenoid.set(false);
+
+        mFist = new Solenoid (Constants.fistSolenoid);
+        mFist.set(false);
 
         mRobotState = RobotState.getInstance();
         mIntake = Intake.getInstance();
@@ -89,6 +92,7 @@ public class BeltClamp extends Subsystem {
                 mSystemState = SystemState.IDLE;
                 mWantedState = WantedState.WANT_IDLE;
                 mStateChanged = true;
+                
             }
         }
     
@@ -109,22 +113,24 @@ public class BeltClamp extends Subsystem {
                     if(Indexer.getInstance().getMoving()){ //indexer needs ball
                         if(mRobotState.getBeltBalls()>0){ //ball available to convey
                             mWantedState = WantedState.WANT_CONVEY;
+                          
                         }
                     }else{
                         mWantedState = WantedState.WANT_IDLE;
+                        
                     }
 
                    
                     ballFromIntakeTime=0;
                 } else{ //intaking
 
-                    if(RobotState.getInstance().getBeltBalls()>=2&&RobotState.getInstance().getFeederBalls()<2){ //belt is full right now, should probaly fill
+                    if(RobotState.getInstance().getBeltBalls()>0&&RobotState.getInstance().getFeederBalls()<2){ //belt is full right now, should probaly fill
                         
                             if(ballFromIntakeTime==0) ballFromIntakeTime=now;
                             else if(now-ballFromIntakeTime>=Constants.kBeltClampIntakeClampTime) mWantedState = WantedState.WANT_CONVEY;
                         
                     }else{
-                        mWantedState = WantedState.WANT_AGITATING;
+                        mWantedState = WantedState.WANT_IDLE;//WANT_AGITATING;
                         ballFromIntakeTime=0;
                     }
 
@@ -180,8 +186,8 @@ public class BeltClamp extends Subsystem {
     
     private synchronized SystemState handleIdle(){
         if(mStateChanged){
-           // stop();
-           setOpenLoop(-.1);
+            stop();
+          
         }
 
         switch(mWantedState){
@@ -200,13 +206,14 @@ public class BeltClamp extends Subsystem {
         if(mStateChanged){
             mSolenoid.set(true);
             setOpenLoop(Constants.kBeltClampConveySpeed);
+            mFist.set(true);
         }
 
         boolean timedOut=false;
 
-       // if(now-stateStartTime>=Constants.kBeltClampConveyTimeout) { //timed out, start agitating
-      //      timedOut=true;
-      //  }
+        if(now-stateStartTime>=Constants.kBeltClampConveyTimeout) { //timed out, start agitating
+            timedOut=true;
+       }
 
 
         switch(mWantedState){
@@ -237,17 +244,22 @@ public class BeltClamp extends Subsystem {
             agitationStartTime = now;
             agitationDirection*=-1;
             setOpenLoop(Constants.kBeltClampAgitationSpeed*agitationDirection);
+            if(agitationDirection==1) mFist.set(true);
+            else mFist.set(false);
         }
 
         boolean timerDone=false;
         
-        if(now-stateStartTime>=Constants.kBeltClampConveyTimeout) { //timed out, start agitating
+        if(now-stateStartTime>=Constants.kBeltClampAgitationTime) { //timed out, start agitating
            timerDone=true;
         }
+
+        
 
         switch(mWantedState){
             case WANT_CONVEY:
                 if(timerDone) return SystemState.CONVEYING;
+                else return SystemState.AGITATING;
             case WANT_IDLE:
                 return SystemState.IDLE;
             default:
@@ -270,6 +282,7 @@ public class BeltClamp extends Subsystem {
     public synchronized void stop() {
         setOpenLoop(0);
         mSolenoid.set(false);
+        mFist.set(false);
     }
 
     @Override

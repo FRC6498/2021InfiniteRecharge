@@ -382,6 +382,8 @@ public class Shooter extends Subsystem {
             mTurret.setDesiredAngle(Rotation2d.fromDegrees(Constants.kDumpToTrenchYaw));
 
             setWantsToFireIfReady(WantedFiringAmount.WANT_FIRE_CONTINUOUS);
+
+          
         }
 
 
@@ -520,8 +522,8 @@ public class Shooter extends Subsystem {
 
 
         if(mWantedState!=WantedState.WANT_AUTO){
-          //  TurretCam.setCameraMode(CameraMode.eDriver);
-           // TurretCam.setLedMode(LightMode.eOff);
+            TurretCam.setCameraMode(CameraMode.eDriver);
+           TurretCam.setLedMode(LightMode.eOff);
         }
 
         switch(mWantedState){
@@ -577,7 +579,7 @@ public class Shooter extends Subsystem {
         boolean is_stopped = Math.abs(mDrive.getLeftVelocityInchesPerSec()) < Constants.kAutoShootMaxDriveSpeed
                 && Math.abs(mDrive.getRightVelocityInchesPerSec()) < Constants.kAutoShootMaxDriveSpeed;
         if (mSystemState == SystemState.AUTO_AIM) {
-            if ((mTuningMode || mHood.isOnTarget()) && /*mFlywheel.isOnTarget()*/ true && mTurret.isOnTarget()
+            if ((mTuningMode || mHood.isOnTarget()) && mFlywheel.isOnTarget() && mTurret.isOnTarget()
                     && hasTarget()) {
                 mConsecutiveCyclesOnTarget++;
             } else {

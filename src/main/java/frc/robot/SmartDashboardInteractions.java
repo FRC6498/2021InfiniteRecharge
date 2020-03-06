@@ -27,7 +27,7 @@ public class SmartDashboardInteractions {
 
     private static final String AUTO_BALLS_WORN = "auto_balls_worn";
 
-    private static final AutonOption DEFAULT_MODE = AutonOption.SHOOT_THREE;
+    private static final AutonOption DEFAULT_MODE = AutonOption.SHOOT_THREE_GET_TRENCH_SHOOT;
     private static final AutonLane DEFAULT_LANE = AutonLane.LANE_1;
 
     public void initWithDefaults() {
@@ -85,17 +85,13 @@ public class SmartDashboardInteractions {
      * objects directly, so use this enum to project us from WPILIb.
      */
     enum AutonOption {
-       /* STAY_HIGH_ONE_BALL_DRIVE_BACK("No Drop Drive Back"), //
-        STAY_HIGH_ONE_BALL("No Drop Stay"), //
-        GET_LOW_ONE_BALL("Portcullis - STOP"), //
-        GET_LOW_COME_BACK_LEFT("Portcullis - Come back left"), //
-        GET_LOW_COME_BACK_RIGHT("Portcullis - Come back right"), //
-        CDF_ONE_BALL("CDF - Stop"), //
-        CDF_COME_BACK_LEFT("CDF - Come back left"), //
-        CDF_COME_BACK_RIGHT("CDF - Come back right"), //
-        TWO_BALL_LOW_BAR("Low Bar - Two Ball"), //
-        TWO_BALL_CLASS_BD("Class B/D - Two Ball"), //*/
-        SHOOT_THREE("Shoot Three"),
+
+        SHOOT_THREE_GET_TRENCH_SHOOT("STGTS"),
+        GET_TWO_SHOOT_FIVE("GTSF"),
+        SHOOT_THREE("ST"),
+        SHOOT_THREE_MOVE_TRENCH("STMT"),
+        SHOOT_THREE_MOVE_FORWARD("STMF"),
+        SHOOT_THREE_MOVE_BACKWARD("STMB"),
         STAND_STILL("Stand Still"), //
         TEST_DRIVE("TEST ONLY Driving");
 
@@ -107,7 +103,7 @@ public class SmartDashboardInteractions {
     }
 
     enum AutonLane {
-        LANE_1(160, "1"), LANE_2(205, "2"), LANE_3(160, "3"), LANE_4(155, "4"), LANE_5(220, "5");
+        LANE_1(160, "1"), LANE_2(205, "2"), LANE_3(160, "3");
 
         public final double distanceToDrive;
         public final String numberString;
@@ -125,37 +121,38 @@ public class SmartDashboardInteractions {
             return new ShooterAimingParameters(150.0, Rotation2d.fromDegrees(-30));
         } else if (lane == AutonLane.LANE_3) {
             return new ShooterAimingParameters(140.0, Rotation2d.fromDegrees(-15));
-        } else if (lane == AutonLane.LANE_4) {
-            return new ShooterAimingParameters(140.0, Rotation2d.fromDegrees(10));
         } else { /* if (lane == AutonLane.LANE_5) */
             return new ShooterAimingParameters(140.0, Rotation2d.fromDegrees(25));
         }
     }
 
+    private double getDistanceForAutoLane(AutonLane lane){
+        switch(lane){
+
+            case LANE_1:
+                return 25;
+            case LANE_2:
+                return 35+25;
+            default:
+                return 25;
+        }
+    }
+
     private AutoModeBase createAutoMode(AutonOption autonOption, AutonLane autonLane) {
         switch (autonOption) {
-     //   case STAY_HIGH_ONE_BALL:
-            //return new StayHighOneBall(false);
-       // case STAY_HIGH_ONE_BALL_DRIVE_BACK:
-           // return new StayHighOneBall(true);
-      /*  case GET_LOW_ONE_BALL:
-            return new GetLowOneBallMode(getAimingHintForLane(autonLane), false, false);
-        case GET_LOW_COME_BACK_LEFT:
-            return new GetLowOneBallMode(getAimingHintForLane(autonLane), true, false);
-        case GET_LOW_COME_BACK_RIGHT:
-            return new GetLowOneBallMode(getAimingHintForLane(autonLane), true, true);
-        case CDF_ONE_BALL:
-            return new ChevalDeFriseMode(getAimingHintForLane(autonLane), false, false);
-        case CDF_COME_BACK_LEFT:
-            return new ChevalDeFriseMode(getAimingHintForLane(autonLane), true, false);
-        case CDF_COME_BACK_RIGHT:
-            return new ChevalDeFriseMode(getAimingHintForLane(autonLane), true, true);
-        case TWO_BALL_LOW_BAR:
-            return new TwoBallLowBarMode();
-        case TWO_BALL_CLASS_BD:
-            return new TwoBallClassBDMode(getAimingHintForLane(autonLane));*/
+    
+        case SHOOT_THREE_GET_TRENCH_SHOOT:
+            return new ShootThreeGetTrenchShootMode(getDistanceForAutoLane(autonLane));
         case SHOOT_THREE:
-            return new ShootThreeMode(getAimingHintForLane(autonLane));
+            return new ShootThreeMode();
+        case SHOOT_THREE_MOVE_TRENCH:
+            return new ShootThreeMoveTrenchMode(getDistanceForAutoLane(autonLane));
+        case SHOOT_THREE_MOVE_FORWARD:
+            return new ShootThreeMoveForwardMode();
+        case SHOOT_THREE_MOVE_BACKWARD:
+            return new ShootThreeMoveBackwardMode();
+        case GET_TWO_SHOOT_FIVE:
+            return new GetTwoShootFiveMode(getDistanceForAutoLane(autonLane));
         case TEST_DRIVE:
             return new AutoModeBase() {
                 @Override

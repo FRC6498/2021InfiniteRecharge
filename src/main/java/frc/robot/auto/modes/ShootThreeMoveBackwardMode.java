@@ -33,20 +33,25 @@ import frc.robot.subsystems.ShooterAimingParameters;
  * should return, if it should return on the right side low bar, and if it
  * should launch a single ball.
  */
-public class ShootThreeMode extends AutoModeBase {
-   
+public class ShootThreeMoveBackwardMode extends AutoModeBase {
 
-    ShooterAimingParameters mHint = new ShooterAimingParameters(12*10, Rotation2d.fromDegrees(0));
+    ShooterAimingParameters mHint = new ShooterAimingParameters(12 * 10, Rotation2d.fromDegrees(0));
 
-    
-   
-    public ShootThreeMode() {
-     
+    public ShootThreeMoveBackwardMode() {
+
     }
 
     @Override
     protected void routine() throws AutoModeEndedException {
 
+
+        List<Waypoint> first_path = new ArrayList<>();
+        first_path.add(new Waypoint(new Translation2d(0, 0), 36.0));
+        first_path.add(new Waypoint(new Translation2d(-12*4,0), 36.0));
+      
+
+      
+      
 
         Drive.getInstance().setHighGear(false);
 
@@ -59,7 +64,8 @@ public class ShootThreeMode extends AutoModeBase {
                  new ShootWhenReadyAction(),
                  new ShootWhenReadyAction(),
                  new WaitAction(1),
-                 new StopShootingAction()
+                 new StopShootingAction(),
+                 new FollowPathAction(new Path(first_path), true)
                  )));
                    
     }

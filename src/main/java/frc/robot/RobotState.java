@@ -239,11 +239,13 @@ public class RobotState {
     public synchronized void setIntakeBalls(int number){
         totalBallsInBelt+=number;
         if(totalBallsInBelt<0) totalBallsInBelt=0;
+        else if(totalBallsInBelt>5) totalBallsInBelt = 5;
     }
 
     public synchronized void setFeederBalls(int number){
         totalBallsInFeeder+=number;
         if(totalBallsInFeeder<0) totalBallsInFeeder=0;
+        else if(totalBallsInFeeder>2) totalBallsInFeeder = 2;
     }
 
     public synchronized int getFeederBalls(){

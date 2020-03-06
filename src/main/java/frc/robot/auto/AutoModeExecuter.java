@@ -36,4 +36,8 @@ public class AutoModeExecuter {
         m_thread = null;
     }
 
+    public boolean autoModeActive(){
+        return m_thread!=null;
+    }
+
 }

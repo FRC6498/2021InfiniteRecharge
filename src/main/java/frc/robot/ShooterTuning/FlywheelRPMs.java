@@ -9,8 +9,8 @@ public class FlywheelRPMs {
 
     static {
         kFlywheelAutoAimMap.put(new InterpolatingDouble(60.0),
-                new InterpolatingDouble(5200.0));
+                new InterpolatingDouble(5200.0));//5200
         kFlywheelAutoAimMap.put(new InterpolatingDouble(300.0),
-                new InterpolatingDouble(5900.0));
+                new InterpolatingDouble(5900.0));//5900
     }
 }

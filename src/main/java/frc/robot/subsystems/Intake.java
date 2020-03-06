@@ -95,7 +95,7 @@ public class Intake extends Subsystem {
                     newState = handleIntakeLoad(now);
                     break;
                 case PLOW:
-                    newState = handlePlow();
+                    newState = handlePlow(now, mCurrentStateStartTime);
                     break;
                 default:
                     System.out.println("Unexpected Intake state: " + mSystemState);
@@ -179,13 +179,14 @@ public class Intake extends Subsystem {
 
     private double ballSeenStartTime=0;
     private double actuationStartTime=0;
+    private boolean actuatedDown = false;
     private double rumbleTime=.3;
     private double rumbleStartTime=0;
     private synchronized SystemState handleIntakeGround(double now, double startTime){
 
         if(mStateChanged){
             mSolenoid.set(Value.kForward);
-           setOpenLoop(Constants.kIntakeGroundSpeed);
+            actuatedDown = false;
         }
         double currentThreshold = Constants.kIntakeGroundCurrentThreshold;
         if(Constants.kIntakeVelocityCompensation){
@@ -196,9 +197,9 @@ public class Intake extends Subsystem {
             currentThreshold = currentThreshold+Constants.kIntakeCurrentRateOfChange*avgVelocity;
         }
 
-        //if(now-startTime>=Constants.kIntakeActuationTime){
-               
-           
+        if(!actuatedDown&&now-startTime>=Constants.kIntakeActuationTime){
+            actuatedDown = true;
+            setOpenLoop(Constants.kIntakeGroundSpeed);
           //  if(ballSeenStartTime==0&&getCurrent()>=currentThreshold ){
          //       ballSeenStartTime=now;
          //   //  System.out.println("Intake ball detected");
@@ -211,7 +212,7 @@ public class Intake extends Subsystem {
 
         //    }
        
-      //  }
+        }
 
         if(rumbleStartTime!=0&&now-rumbleStartTime>=rumbleTime){
             ControlBoard.getInstance().setRumble(0);
@@ -223,13 +224,14 @@ public class Intake extends Subsystem {
             System.out.println("Intake reached max balls");
         }else if(actuationStartTime!=0){ 
         }else if(mRobotState.getTotalBalls()>=5){
-            actuationStartTime=now;
+         //   actuationStartTime=now;
         }
 
 
 
         if(mWantedState!=WantedState.WANT_INTAKE_GROUND) {
             ControlBoard.getInstance().rumbleOff();
+            setOpenLoop(0);
         }
 
         switch(mWantedState){
@@ -258,13 +260,26 @@ public class Intake extends Subsystem {
         }
     }
 
-    private synchronized SystemState handlePlow(){
+    private synchronized SystemState handlePlow(double now, double startTime){
 
 
         if(mStateChanged){
             mSolenoid.set(Value.kForward);
-           setOpenLoop(-Constants.kIntakePlowSpeed);
+            actuatedDown = false;
         }
+
+
+
+
+        if(!actuatedDown&&now-startTime>=Constants.kIntakeActuationTime){
+            actuatedDown = true;
+            setOpenLoop(-Constants.kIntakePlowSpeed);
+        }
+
+        if(mWantedState!=WantedState.WANT_PLOW) {
+            setOpenLoop(0);
+        }
+
 
         switch(mWantedState){
             case WANT_INTAKE_GROUND:

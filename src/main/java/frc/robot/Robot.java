@@ -12,7 +12,9 @@ import frc.lib.util.RigidTransform2d;
 import frc.lib.util.Rotation2d;
 import frc.robot.StateMachines.Shooter;
 import frc.robot.Vision.TurretCam;
+import frc.robot.Vision.TurretCam.CameraMode;
 import frc.robot.Vision.TurretCam.LightMode;
+import frc.robot.Vision.TurretCam.StreamMode;
 import frc.robot.auto.AutoModeExecuter;
 import frc.robot.auto.modes.ClimbMode;
 import frc.robot.loops.Looper;
@@ -117,6 +119,9 @@ public class Robot extends TimedRobot {
 
             mSmartDashboardInteractions.initWithDefaults();
 
+
+            TurretCam.setCameraMode(CameraMode.eDriver);
+            TurretCam.setLedMode(LightMode.eOff);
            
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
@@ -148,6 +153,8 @@ public class Robot extends TimedRobot {
             c.stop();
 
            // TurretCam.setLedMode(LightMode.eOff);
+           TurretCam.setCameraMode(CameraMode.eDriver);
+           TurretCam.setLedMode(LightMode.eOff);
 
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             mDrive.setBrakeMode(true);
@@ -168,6 +175,8 @@ public class Robot extends TimedRobot {
             }
             mAutoModeExecuter = null;
 
+            TurretCam.setStreamMode(StreamMode.LimeMain);
+
             // Reset all sensors
             zeroAllSensors();
 
@@ -177,7 +186,7 @@ public class Robot extends TimedRobot {
             
             mShooter.setHoodAdjustment(mSmartDashboardInteractions.areAutoBallsWorn()
             ? Constants.kOldBallHoodAdjustment : Constants.kNewBallHoodAdjustment);
-            c.start();
+           // c.start();
            
             mEnabledLooper.start();
 
@@ -206,6 +215,8 @@ public class Robot extends TimedRobot {
             // Reset drive
             mDrive.resetEncoders();
 
+            TurretCam.setStreamMode(StreamMode.USBMain);
+
            
            c.start();
 
@@ -215,7 +226,7 @@ public class Robot extends TimedRobot {
             //mDisabledLooper.stop();
             mEnabledLooper.start();
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
-            mDrive.setBrakeMode(false);
+            mDrive.setBrakeMode(true);
 
             mShooter.setHoodAdjustment(mSmartDashboardInteractions.areAutoBallsWorn()
             ? Constants.kOldBallHoodAdjustment : Constants.kNewBallHoodAdjustment);
@@ -380,8 +391,27 @@ boolean climbing=false;
 
             if(mControls.fillBalls()) mRobotState.fillBalls();
 
-            if(mControls.addCSVValue()) mShooter.addHoodCSV();
+            if(mHoodTuningMode) if(mControls.addCSVValue()) mShooter.addHoodCSV();
+        } else{ //climbing
+
+            double balanceJog = mControls.getBalanceJog();
+            double winchJog = mControls.getWinchJog();
+
+
+           if(Math.abs(balanceJog)>.09) mLeveller.set(balanceJog);
+           else mLeveller.set(0);
+
+         
+                if(Math.abs(winchJog)>.09){
+                     mWinch.setOpenLoop(winchJog);
+                    System.out.println("Winch jog");
+                }
+                else mWinch.setOpenLoop(0);
+
+            
+
         }
+        
             if(mControls.getStartClimb()){
                  mAutoModeExecuter.start();
                 climbing=true;
@@ -391,7 +421,9 @@ boolean climbing=false;
                  climbing=false;
             }
 
-            mLeveller.set(mControls.getBalanceJog());
+            
+
+           
         
            allPeriodic();
      

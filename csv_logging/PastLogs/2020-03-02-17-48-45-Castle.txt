@@ -1,0 +1,21 @@
+package frc.robot.ShooterTuning;
+import frc.lib.util.InterpolatingDouble;
+import frc.lib.util.InterpolatingTreeMap;
+public class HoodAngles {
+	public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kHoodAutoAimMap = new InterpolatingTreeMap<>();
+ 	static {
+		/*
+		Mon, 2 Mar 2020 17:48:45 -0600
+		Castle
+		(inch, angle)
+		*/
+		kHoodAutoAimMap.put(new InterpolatingDouble(86.40832854661117), new InterpolatingDouble(57.097516818857144));
+		kHoodAutoAimMap.put(new InterpolatingDouble(105.23031348638716), new InterpolatingDouble(61.617605641714285));
+		kHoodAutoAimMap.put(new InterpolatingDouble(127.82068219110738), new InterpolatingDouble(61.60818879));
+		kHoodAutoAimMap.put(new InterpolatingDouble(150.2726363985784), new InterpolatingDouble(64.85386499742857));
+		kHoodAutoAimMap.put(new InterpolatingDouble(168.72183127670488), new InterpolatingDouble(64.10365449428572));
+		kHoodAutoAimMap.put(new InterpolatingDouble(180.71515574393112), new InterpolatingDouble(61.093400896285715));
+		kHoodAutoAimMap.put(new InterpolatingDouble(202.30478796102733), new InterpolatingDouble(62.254812607714285));
+		kHoodAutoAimMap.put(new InterpolatingDouble(219.074801660536), new InterpolatingDouble(57.719029032));
+	}
+}

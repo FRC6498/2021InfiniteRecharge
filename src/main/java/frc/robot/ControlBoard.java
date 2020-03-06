@@ -5,6 +5,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import frc.lib.util.DriveSignal;
+import frc.robot.Vision.TurretCam;
+import frc.robot.Vision.TurretCam.StreamMode;
 
 /**
  * A basic framework for the control board Like the drive code, one instance of
@@ -144,8 +146,8 @@ public class ControlBoard {
     public boolean getDriveInverted() {
         if(mDriver.getStickButtonReleased(Hand.kLeft)){
             driveInverted=!driveInverted;
-         //   if(driveInverted)CameraVision.setStreamMode(StreamMode.LimeMain);
-           // else CameraVision.setStreamMode(StreamMode.USBMain);
+            if(driveInverted)TurretCam.setStreamMode(StreamMode.USBMain);
+            else TurretCam.setStreamMode(StreamMode.LimeMain);
         }
     
     
@@ -165,7 +167,7 @@ public class ControlBoard {
     }
 
     public boolean getTractionControl(){
-        return mDriver.getBButtonPressed();
+        return mDriver.getBButton();
     }
     
    public boolean getLowGear(){
@@ -188,24 +190,38 @@ public class ControlBoard {
    }
 //CLIMBING------------------
    public boolean getStartClimb(){
-       return mDriver.getXButtonPressed();
+       return mOperator.getStartButtonPressed();
    }
 
    public boolean getStopClimb(){
-       return mDriver.getYButtonPressed();
+       return mOperator.getBackButtonPressed();
    }
 
    public double getLiftJog(){
-       return -mDriver.getY(Hand.kLeft);
+       return -mOperator.getY(Hand.kRight);
    }
 
    public double getWinchJog(){
-       return -mDriver.getY(Hand.kRight);
+       return -mOperator.getY(Hand.kLeft);
    }
 
    public double getBalanceJog(){
-       return mDriver.getX(Hand.kLeft);
+       return mOperator.getX(Hand.kRight);
    }
+
+   public boolean scanUp(){
+       return mOperator.getYButtonPressed();
+   }
+
+   public boolean scanDown(){
+       return mOperator.getAButtonPressed();
+   }
+
+   public boolean confirmButton(){
+       return mOperator.getBButtonPressed();
+   }
+
+
 
 
 

@@ -132,7 +132,7 @@ public class Winch extends Subsystem {
 
     // We are "OnTarget" if we are in position mode and close to the setpoint.
     public synchronized boolean isOnTarget() {
-        return (Math.abs(getError()) < Constants.kWinchTargetThreshold*Constants.kWinchTicksPerInch);
+        return (Math.abs(getError()) < Constants.kWinchTargetThreshold);
     }
 
    
