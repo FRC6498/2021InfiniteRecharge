@@ -57,7 +57,7 @@ public class Constants {
     public static double kMinHoodAngle = 45;//42.48;
     public static double kMaxHoodAngle = 78;//55;//75.96;//71.42;
     public static double kHoodNeutralAngle = 46.5;//42.5;
-    public static double kHoodOnTargetTolerance = 0.4;
+    public static double kHoodOnTargetTolerance = 1;//.5;//.4
     //public static double kHoodGearReduction = 20/564; 
 
       // Turret constants
@@ -76,7 +76,7 @@ public class Constants {
     // Auto aiming/shooter constants
     public static double kAutoAimMinRange = 60;//10.0;
     public static double kAutoAimMaxRange = 400.0;
-    public static double kAutoShootMaxDriveSpeed = 18.0;
+    public static double kAutoShootMaxDriveSpeed = 3;//18.0;
     public static double kAutoAimPredictionTime = 0.25;
     public static int kAutoAimMinConsecutiveCyclesOnTarget = 3;
     //public static double kShootActuationTime = 0.75;
@@ -97,27 +97,22 @@ public class Constants {
 
     //Feeder Flywheel Constatns
     public static double kFeederFlywheelShootRPM = 3000;
-    public static double kFeederFlywheelActuationTime = .3;//.75;
+    public static double kFeederFlywheelActuationTime = .25;//.75;
     public static double kFeederFlywheelOnTargetTolerance = 100;
 
     //Intake Constatns
-    public static double kIntakeGroundSpeed = .95;//.75;
-    public static boolean kIntakeVelocityCompensation=false;
-    public static double kIntakeVelocityRateOfChange = .05;
-    public static double kIntakeCurrentRateOfChange = .05;
-    public static double kIntakeGroundCurrentThreshold = 15;
-    public static double kIntakeGroundTimeThreshold = 1;
-    public static double kIntakeActuationTime = 1;
-    public static double kIntakePlowSpeed = .75;
+    public static double kIntakeGroundSpeed = .8;//.95;//.75;
+    public static double kIntakeActuationTime = .5;
+    public static double kIntakePlowSpeed = 1;//.75
     
     //Belt Clamp Constants
     public static double kBeltClampConveySpeed=.6;
 
     public static double kBeltClampAgitationPeriod = .5;
-    public static double kBeltClampAgitationTime = 2;
+    public static double kBeltClampAgitationTime = 1.5;//2;
     public static double kBeltClampAgitationSpeed = .45;
-    public static double kBeltClampConveyTimeout = 5;
-    public static double kBeltClampIntakeClampTime = 0;
+    public static double kBeltClampConveyTimeout = 1.25;//2.5;
+   // public static double kBeltClampIntakeClampTime = 0;
 
      
 
@@ -128,7 +123,7 @@ public class Constants {
    // PID gains for hood position loop
     // Units: error is degrees of hood rotation. Max output is +/- 1.0.
     // Loop runs at 100Hz
-    public static double kHoodKp = 0.1;//0.1;
+    public static double kHoodKp = 0.2;//0.1;
     public static double kHoodKi = 0.0;
     public static double kHoodKd = 0.0;
     public static double kHoodDeadband = 0.3; // degrees
@@ -259,12 +254,16 @@ public class Constants {
     public static final int kDriveLeftPhotoeyePort = 4;
 
     public static final int kDriveRightPhotoeyePort = 5;
+
+    public static final int kLiftHeightSensorPort = 6;
+
+    public static final int kLiftHookSensorPort = 7;
     
    
 
     // Shooter Operational consts
     public static final double kOldBallHoodAdjustment = 2.4;
-    public static final double kNewBallHoodAdjustment = 0.7;
+    public static final double kNewBallHoodAdjustment = 1.2;//0.7;
    
 
 
@@ -275,7 +274,7 @@ public class Constants {
       public final static double kLiftFalconKi = 0;
       public final static double kLiftFalconKd = 0;
       public final static double kLiftFalconKf = 0.1;
-      public static final int kBarSensorChannel = 1; 
+     // public static final int kBarSensorChannel = 1; 
       public static final double kBarSensorThreshold = .5;
       public static final double kBarSensorTimeThreshold = .2;//.2
       public static final double kLiftTicksPerInch = 2048*(10/1)*(1/(Math.PI*1.25)); 

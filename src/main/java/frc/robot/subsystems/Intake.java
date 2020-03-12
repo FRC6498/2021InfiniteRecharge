@@ -62,6 +62,8 @@ public class Intake extends Subsystem {
 
     private SystemState mSystemState = SystemState.IDLE;
     private boolean mStateChanged;
+
+    
     
     Loop mLoop = new Loop() {
         private double mCurrentStateStartTime;
@@ -131,23 +133,36 @@ public class Intake extends Subsystem {
     
     
    
-    double idleWaitTime=2.5;
+    double idleWaitTime=.5;//2.5;
     boolean idleInitialized=false;
     double idleInitializedTime = 0;
+    double idleStartTime =0;
 
-    double pistonOnTime = .2;
+    double pistonOnTime = .15;
     boolean pistonDone = false;
+
+    boolean restartCycle = false;
+
+    public synchronized void cycle(){
+        restartCycle=true;
+    }
+
 
 
     private synchronized SystemState handleIdle(double now, double startTime){
-        if(mStateChanged){
+        if(mStateChanged||restartCycle){
             stop();
             idleInitialized=false;
             idleInitializedTime=0;
             pistonDone=false;
+            idleStartTime = startTime;
+
+            if(restartCycle) idleStartTime = now;
+
+            restartCycle=false;
         }
 
-        if(!idleInitialized&&now-startTime>=idleWaitTime){
+        if(!idleInitialized&&now-idleStartTime>=idleWaitTime){
             idleInitialized=true;
             idleInitializedTime=now;
             mSolenoid.set(Value.kForward);
@@ -177,64 +192,49 @@ public class Intake extends Subsystem {
         }
     }
 
-    private double ballSeenStartTime=0;
+   
     private double actuationStartTime=0;
     private boolean actuatedDown = false;
-    private double rumbleTime=.3;
-    private double rumbleStartTime=0;
+  
     private synchronized SystemState handleIntakeGround(double now, double startTime){
 
         if(mStateChanged){
+            actuatedDown = getIntakeDown();
             mSolenoid.set(Value.kForward);
-            actuatedDown = false;
+            
+            actuationStartTime=0;
         }
-        double currentThreshold = Constants.kIntakeGroundCurrentThreshold;
-        if(Constants.kIntakeVelocityCompensation){
-            double avgVelocity = Math.abs( (Drive.getInstance().getLeftVelocityInchesPerSec()
-            +Constants.kIntakeVelocityRateOfChange*Drive.getInstance().getRightVelocityInchesPerSec())/2);
-            setOpenLoop(Constants.kIntakeGroundSpeed+Constants.kIntakeVelocityRateOfChange+avgVelocity);
-
-            currentThreshold = currentThreshold+Constants.kIntakeCurrentRateOfChange*avgVelocity;
-        }
+  
 
         if(!actuatedDown&&now-startTime>=Constants.kIntakeActuationTime){
             actuatedDown = true;
             setOpenLoop(Constants.kIntakeGroundSpeed);
-          //  if(ballSeenStartTime==0&&getCurrent()>=currentThreshold ){
-         //       ballSeenStartTime=now;
-         //   //  System.out.println("Intake ball detected");
-          //      mRobotState.setIntakeBalls(1);
-         //       ControlBoard.getInstance().setRumble(.75);
-        //        rumbleStartTime=now; //rumble on when ball seen
-
-        //    }else if(now-ballSeenStartTime>=Constants.kIntakeGroundTimeThreshold){
-        //        ballSeenStartTime = 0;
-
-        //    }
-       
-        }
-
-        if(rumbleStartTime!=0&&now-rumbleStartTime>=rumbleTime){
-            ControlBoard.getInstance().setRumble(0);
-            rumbleStartTime=0;
         }
             
-        if(actuationStartTime!=0&&now-actuationStartTime>=Constants.kIntakeActuationTime){
-            if(mWantedState==WantedState.WANT_INTAKE_GROUND) mWantedState=WantedState.WANT_IDLE;
-            System.out.println("Intake reached max balls");
-        }else if(actuationStartTime!=0){ 
-        }else if(mRobotState.getTotalBalls()>=5){
-         //   actuationStartTime=now;
-        }
+        WantedState newState = mWantedState;
 
-
-
-        if(mWantedState!=WantedState.WANT_INTAKE_GROUND) {
-            ControlBoard.getInstance().rumbleOff();
+        if(newState!=WantedState.WANT_INTAKE_GROUND){ //exiting intake ground
             setOpenLoop(0);
+
+            if(actuatedDown){//if it wants to exit, but actuated down
+                 newState = WantedState.WANT_INTAKE_GROUND;
+
+                 if(actuatedDown&&actuationStartTime==0){//wants exit, actuated down, timer hasn't started
+                    actuationStartTime = now;
+                 }
+
+                 //wants to exit, actuated down, and timer ready
+                 if(actuationStartTime!=0&&now-actuationStartTime>=Constants.kIntakeActuationTime){
+                    newState= mWantedState;
+                }
+
+            }
         }
 
-        switch(mWantedState){
+       
+
+
+        switch(newState){
             case WANT_INTAKE_GROUND:
                 return SystemState.INTAKE_GROUND;
             case WANT_INTAKE_LOAD:
@@ -264,8 +264,9 @@ public class Intake extends Subsystem {
 
 
         if(mStateChanged){
+            actuatedDown = getIntakeDown();
             mSolenoid.set(Value.kForward);
-            actuatedDown = false;
+            actuationStartTime=0;
         }
 
 
@@ -281,7 +282,27 @@ public class Intake extends Subsystem {
         }
 
 
-        switch(mWantedState){
+        WantedState newState = mWantedState;
+
+        if(newState!=WantedState.WANT_PLOW){ //exiting intake ground
+            setOpenLoop(0);
+
+            if(actuatedDown){//if it wants to exit, but actuated down
+                 newState = WantedState.WANT_PLOW;
+
+                 if(actuatedDown&&actuationStartTime==0){//wants exit, actuated down, timer hasn't started
+                    actuationStartTime = now;
+                 }
+
+                 //wants to exit, actuated down, and timer ready
+                 if(actuationStartTime!=0&&now-actuationStartTime>=Constants.kIntakeActuationTime){
+                    newState= mWantedState;
+                }
+
+            }
+        }
+
+        switch(newState){
             case WANT_INTAKE_GROUND:
                 return SystemState.INTAKE_GROUND;
             case WANT_INTAKE_LOAD:
@@ -294,7 +315,7 @@ public class Intake extends Subsystem {
     }
 
 
-   public boolean getIntakeDown(){
+    public boolean getIntakeDown(){
        return mSolenoid.get()==Value.kForward;
    }
   
@@ -302,9 +323,6 @@ public class Intake extends Subsystem {
        mVictor.set(ControlMode.PercentOutput, speed);
     }
 
-   //synchronized double getCurrent(){
-    //   return mVictor.
-  // }
     
 
     @Override

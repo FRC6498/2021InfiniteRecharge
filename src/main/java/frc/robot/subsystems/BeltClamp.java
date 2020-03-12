@@ -107,7 +107,7 @@ public class BeltClamp extends Subsystem {
 
 
 
-                if(!Intake.getInstance().getIntakeDown()){ //not intaking
+                //if(!Intake.getInstance().getIntakeDown()){ //not intaking
 
                     
                     if(Indexer.getInstance().getMoving()){ //indexer needs ball
@@ -122,9 +122,9 @@ public class BeltClamp extends Subsystem {
 
                    
                     ballFromIntakeTime=0;
-                } else{ //intaking
+              /*  } else{ //intaking
 
-                    if(RobotState.getInstance().getBeltBalls()>0&&RobotState.getInstance().getFeederBalls()<2){ //belt is full right now, should probaly fill
+                    if(RobotState.getInstance().getBeltBalls()>0&&RobotState.getInstance().getFeederBalls()!=2){ //belt is full right now, should probaly fill
                         
                             if(ballFromIntakeTime==0) ballFromIntakeTime=now;
                             else if(now-ballFromIntakeTime>=Constants.kBeltClampIntakeClampTime) mWantedState = WantedState.WANT_CONVEY;
@@ -136,7 +136,7 @@ public class BeltClamp extends Subsystem {
 
                    
 
-                }
+                }*/
                 
                 
      

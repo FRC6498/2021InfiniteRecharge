@@ -5,13 +5,15 @@ import java.util.Arrays;
 import frc.lib.util.Rotation2d;
 import frc.robot.auto.AutoModeBase;
 import frc.robot.auto.AutoModeEndedException;
+import frc.robot.auto.actions.DriveStraightAction;
 import frc.robot.auto.actions.ParallelAction;
 import frc.robot.auto.actions.PointTurretAction;
 import frc.robot.auto.actions.SeriesAction;
 import frc.robot.auto.actions.ClimbingSpecificActions.AlignWithBarAction;
 import frc.robot.auto.actions.ClimbingSpecificActions.DriveOnBarAction;
+import frc.robot.auto.actions.ClimbingSpecificActions.MoveLiftForTimeAction;
 import frc.robot.auto.actions.ClimbingSpecificActions.ScanForBarAction;
-import frc.robot.auto.actions.ClimbingSpecificActions.SetLiftHeightAction;
+
 import frc.robot.auto.actions.ClimbingSpecificActions.SetWinchHeightAction;
 import frc.robot.auto.actions.ClimbingSpecificActions.WaitForConfirmationAction;
 import frc.robot.subsystems.Drive;
@@ -41,13 +43,15 @@ public class ClimbMode extends AutoModeBase {
 
       runAction(new SeriesAction(Arrays.asList(
         new ParallelAction(Arrays.asList( new AlignWithBarAction(-.15), 
-                                          new SetLiftHeightAction(48))),
-        new ScanForBarAction(.175),//.2
-        new DriveOnBarAction(-10.5, -4.5, Drive.getInstance().getGyroAngle().getDegrees() ,.15), // 12.5 turret is the front so to climb drive backwards
-        new WaitForConfirmationAction(),
-        new ParallelAction(Arrays.asList( new SetLiftHeightAction(0)/* , new SetWinchHeightAction(5)*/))
+                                          new MoveLiftForTimeAction(.35,1))),
+        new ParallelAction(Arrays.asList( new DriveStraightAction(-8, -4.5, Drive.getInstance().getGyroAngle().getDegrees()),
+                                          new  ScanForBarAction(.2))),                               
+        new DriveOnBarAction(-4.5, Drive.getInstance().getGyroAngle().getDegrees()), // 12.5 turret is the front so to climb drive backwards
+        new MoveLiftForTimeAction(1, -1)
+     
       )));
 
+     
       
 
 

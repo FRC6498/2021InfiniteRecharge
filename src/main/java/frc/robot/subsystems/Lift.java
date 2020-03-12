@@ -14,6 +14,7 @@ import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
@@ -27,8 +28,8 @@ import frc.robot.loops.Looper;
 public class Lift extends Subsystem
 {
     private TalonFX falcon_;
-    private AnalogInput sensor_;
-
+   // private AnalogInput sensor_;
+    private DigitalInput heightSensor, hookSensor;
 
     private static Lift instance_ = new Lift();
 
@@ -47,7 +48,7 @@ public class Lift extends Subsystem
         public void onLoop() {
             synchronized (Lift.this) {
                 
-                seesBarUpdater();
+                //seesBarUpdater();
                
             }
         }
@@ -114,7 +115,11 @@ public class Lift extends Subsystem
 
         reset();
 
-        sensor_ = new AnalogInput(Constants.kBarSensorChannel);
+        heightSensor = new DigitalInput(Constants.kLiftHeightSensorPort);
+
+        hookSensor = new DigitalInput(Constants.kLiftHookSensorPort);
+
+        //sensor_ = new AnalogInput(Constants.kBarSensorChannel);
     }
 
 
@@ -155,12 +160,12 @@ public class Lift extends Subsystem
         return (Math.abs(getError()) < Constants.kLiftTargetThreshold);
     }
 
-    boolean seesBarValue=false;
-    public boolean seesBarRaw(){
-        return sensor_.getVoltage()>Constants.kBarSensorThreshold;
-    }
+  //  boolean seesBarValue=false;
+   // public boolean seesBarRaw(){
+  //      return sensor_.getVoltage()>Constants.kBarSensorThreshold;
+  //  }
 
-    double seenTime = 0;
+   /* double seenTime = 0;
     private void seesBarUpdater(){
 
         double now = Timer.getFPGATimestamp();
@@ -175,10 +180,14 @@ public class Lift extends Subsystem
   
           seesBarValue = seenTime!=0&&(now-seenTime)>Constants.kBarSensorTimeThreshold;
           
-    }
+    }*/
 
     public synchronized boolean seesBar(){
-        return seesBarValue;
+        return heightSensor.get();
+    }
+
+    public synchronized boolean hookedOn(){
+        return heightSensor.get();
     }
 
     @Override
@@ -192,8 +201,9 @@ public class Lift extends Subsystem
         SmartDashboard.putNumber("lift_height", getHeight());
         SmartDashboard.putNumber("lift_setpoint", getSetpoint());
         SmartDashboard.putBoolean("lift_on_target", isOnTarget());
-        SmartDashboard.putNumber("lift_bar_sensor", sensor_.getVoltage());
+       // SmartDashboard.putNumber("lift_bar_sensor", sensor_.getVoltage());
         SmartDashboard.putBoolean("lift_sees_bar", seesBar());
+        SmartDashboard.putBoolean("lift_hooked_on", hookedOn());
     }
 
     @Override

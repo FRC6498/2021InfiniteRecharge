@@ -48,9 +48,9 @@ public class FeederBelt extends Subsystem {
 
                 if(needsBall()&&(mIndexer.hasBall()||mIndexer.getMoving())){
                     set(Constants.kFeederBeltLoadingSpeed);
-                }else if(needsBall()){
+                }else if(needsBall()){//needs ball but no ball ready
                     set(0);
-                }else if(FeederFlywheel.getInstance().needsBall()){
+                }else if(FeederFlywheel.getInstance().needsBall()){//has ball and feeder fly needs one
                     set(Constants.kFeederBeltDeployingSpeed);
                 }else{
                     set(0);

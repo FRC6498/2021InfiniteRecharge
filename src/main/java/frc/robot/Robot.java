@@ -348,6 +348,7 @@ boolean climbing=false;
             if(mControls.getIntake()) mIntake.setWantedState(Intake.WantedState.WANT_INTAKE_GROUND);
             else if(mControls.getStopIntake()) mIntake.setWantedState(Intake.WantedState.WANT_IDLE);
             else if(mControls.getPlow()) mIntake.setWantedState(Intake.WantedState.WANT_PLOW);
+           // else if(mControls.getCycle()) mIntake.cycle();
             
 
             if (mControls.getAutoAim()) {
@@ -361,7 +362,7 @@ boolean climbing=false;
             }
 
             if(mControls.getShooterFireOneWhenReady()){
-                mShooter.setWantsToFireIfReady(Shooter.WantedFiringAmount.WANT_FIRE_ONE);
+                mShooter.setWantsToFireIfReady(Shooter.WantedFiringAmount.WANT_FIRE_CONTINUOUS);
             }else if(mControls.getShooterFireOneNow()){
                 mShooter.setWantsToFireNow(Shooter.WantedFiringAmount.WANT_FIRE_ONE);
             }
@@ -383,6 +384,9 @@ boolean climbing=false;
 
             mShooter.setHoodManualScanOutput(mControls.getHoodTuningAdjustment());
 
+            if(mControls.getChangeOnTheFlyAdjustment()) 
+                    mShooter.setHoodAdjustment(mControls.getHoodOnTheFlyAdjustment());
+
             if(mControls.addBeltBall()) mRobotState.setIntakeBalls(1);
             else if(mControls.subtractBeltBall()) mRobotState.setIntakeBalls(-1);
 
@@ -396,6 +400,7 @@ boolean climbing=false;
 
             double balanceJog = mControls.getBalanceJog();
             double winchJog = mControls.getWinchJog();
+         //   double liftJog = mControls.getLiftJog();
 
 
            if(Math.abs(balanceJog)>.09) mLeveller.set(balanceJog);
@@ -404,21 +409,41 @@ boolean climbing=false;
          
                 if(Math.abs(winchJog)>.09){
                      mWinch.setOpenLoop(winchJog);
-                    System.out.println("Winch jog");
+                  //  System.out.println("Winch jog");
                 }
                 else mWinch.setOpenLoop(0);
 
+              //  if(Math.abs(liftJog)>.09){
+             //       mLift.setOpenLoop(liftJog);
+                   //System.out.println("Lift jog");
+             //  }
+            //   else mLift.setOpenLoop(0);
+
+           //    mDrive.setOpenLoop(mControls.getDriveSignal());//mCheesyDriveHelper.cheesyDrive(throttle, turn, mControls.getQuickTurn()));
+            
+               
+         //   if(mControls.getLowGear()) mDrive.setHighGear(false);
+         //   else if(mControls.getHighGear()) mDrive.setHighGear(true);
             
 
         }
         
             if(mControls.getStartClimb()){
+              if(mAutoModeExecuter == null){
+                   mAutoModeExecuter = new AutoModeExecuter();
+                   mAutoModeExecuter.setAutoMode(new ClimbMode());
+              }
                  mAutoModeExecuter.start();
                 climbing=true;
             }
             else if(mControls.getStopClimb()){
-                 mAutoModeExecuter.stop();
+                if (mAutoModeExecuter != null) {
+                    mAutoModeExecuter.stop();
+                }
                  climbing=false;
+
+                 mAutoModeExecuter = null;
+               
             }
 
             

@@ -1,5 +1,6 @@
 package frc.robot.auto.actions.ClimbingSpecificActions;
 
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.auto.actions.Action;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Lift;
@@ -12,23 +13,27 @@ import frc.robot.subsystems.Lift;
  * @see Action
  * @see Drive
  */
-public class SetLiftHeightAction implements Action {
+public class MoveLiftForTimeAction implements Action {
 
   // private double sensorTimeThreshold = .3;
 
   Lift mLift = Lift.getInstance();
 
-  private double height = 0;
+  private double mTime, mSpeed;
 
-  public SetLiftHeightAction(double heightFromGround) {
-      height=heightFromGround;
+  public MoveLiftForTimeAction(double time, double speed) {
+      mTime = time;
+      mSpeed = speed;
   
     }
+
+    double startTime = 0;
 
     @Override
     public void start() {
        
-       mLift.setDesiredHeight(height);
+       mLift.setOpenLoop(mSpeed);
+       startTime = Timer.getFPGATimestamp();
     }
 
     @Override
@@ -38,14 +43,13 @@ public class SetLiftHeightAction implements Action {
     @Override
     public boolean isFinished() {
         
-      System.out.println("lift on target");
-      return mLift.isOnTarget();
+     return Timer.getFPGATimestamp()-startTime >= mTime;
         
     }
 
     @Override
     public void done() {
-       
+       mLift.setOpenLoop(0);
     }
 
    

@@ -270,6 +270,7 @@ public class Shooter extends Subsystem {
         SmartDashboard.putNumber("current_angle", mCurrentAngleForLogging);
         SmartDashboard.putString("shooter_state", "" + mSystemState);
         SmartDashboard.putBoolean("shooter_ready_to_fire",readyToFire(Timer.getFPGATimestamp()));
+        SmartDashboard.putNumber("Hood adjustment", mHoodAdjustment);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package frc.robot.auto.actions.ClimbingSpecificActions;
 
+import frc.robot.ControlBoard;
 import frc.robot.auto.actions.Action;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Lift;
@@ -20,6 +21,8 @@ public class ScanForBarAction implements Action {
    Lift mLift = Lift.getInstance();
 
     private double scanSpeed = 0;
+
+    private ControlBoard mControls = ControlBoard.getInstance();
    
 
     public ScanForBarAction(double percentOut) {
@@ -35,10 +38,11 @@ public class ScanForBarAction implements Action {
 
     @Override
     public void update() {
-
+        if(mControls.scanDown()) mLift.setOpenLoop(-.5);
+        else mLift.setOpenLoop(scanSpeed);
 
     }
-double seenTime = 0;
+//double seenTime = 0;
     @Override
     public boolean isFinished() {
 
@@ -48,7 +52,8 @@ double seenTime = 0;
 
     @Override
     public void done() {
-       mLift.setOpenLoop(0);
+       //mLift.setOpenLoop(0);
+       mLift.setDesiredHeight(mLift.getHeight());
     }
 
    

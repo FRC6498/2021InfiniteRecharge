@@ -88,7 +88,7 @@ public class FeederFlywheel extends Subsystem {
                     newState = handleIdle();
                     break;
                 case FEED_CONTINUOS:
-                    newState = handleFeedContinuous();
+                    newState = handleFeedContinuous(now);
                     break;
                 case FEED_ONE:
                     newState = handleFeedOne(now);
@@ -164,17 +164,45 @@ public class FeederFlywheel extends Subsystem {
         }
     }
 
-    private synchronized SystemState handleFeedContinuous(){
-        if(mStateChanged)mNeedsBall=true;
+    private synchronized SystemState handleFeedContinuous(double now){
+        if(mStateChanged){
+            mNeedsBall=true;
+            mFeederStartTime = 0;
+            mBeltStartedFeeding=false;
+            if(mFeederBelt.hasBall()) mBeltStartedFeeding=true;
 
-        if(RobotState.getInstance().getTotalBalls()<=0){
-            mWantedState= WantedState.WANT_IDLE;
+            System.out.println("Feeding ball");
+            
         }
 
-        if(mWantedState!=WantedState.WANT_FEED_CONTINUOUS) mNeedsBall=false;
+        if(!mBeltStartedFeeding&&mFeederBelt.hasBall())mBeltStartedFeeding=true; //belt wasn't feeding now it is
 
+        
+
+
+        if(mBeltStartedFeeding&&mFeederBelt.needsBall()&&mFeederStartTime==0){ //ball has gone through belt
+            mNeedsBall=false;
+            mFeederStartTime = now;
+        }
+
+        if(mFeederStartTime!=0&&now-mFeederStartTime>=Constants.kFeederFlywheelActuationTime) {//belt fed, waiting ball to get through
+            //System.out.println("Fed One");//print repeats until ready
+           // if(mWantedState==WantedState.WANT_FEED_ONE) mWantedState=WantedState.WANT_IDLE;
+
+            if(isOnTarget()){ //good to reset if it fed through and on target, if not on target, waits until can reset
+
+                mNeedsBall=true;
+                mFeederStartTime = 0;
+                mBeltStartedFeeding=false;
+                System.out.println("Feeding another ball");
+            }
+            
+        }
+
+        if(mWantedState!=WantedState.WANT_FEED_ONE) mNeedsBall=false;
         switch(mWantedState){
             case WANT_FEED_CONTINUOUS:
+                return SystemState.FEED_CONTINUOS;
             case WANT_FEED_ONE:
                 return SystemState.SPINNING_UP;
             default:

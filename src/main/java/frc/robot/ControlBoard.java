@@ -144,7 +144,7 @@ public class ControlBoard {
     boolean driveInverted=true;
  
     public boolean getDriveInverted() {
-        if(mDriver.getStickButtonReleased(Hand.kLeft)){
+        if(mDriver.getBackButtonReleased()){
             driveInverted=!driveInverted;
             if(driveInverted)TurretCam.setStreamMode(StreamMode.USBMain);
             else TurretCam.setStreamMode(StreamMode.LimeMain);
@@ -210,15 +210,15 @@ public class ControlBoard {
    }
 
    public boolean scanUp(){
-       return mOperator.getYButtonPressed();
+       return mOperator.getYButton();
    }
 
    public boolean scanDown(){
-       return mOperator.getAButtonPressed();
+       return mOperator.getAButton();
    }
 
    public boolean confirmButton(){
-       return mOperator.getBButtonPressed();
+       return mOperator.getBButton();
    }
 
 
@@ -235,6 +235,16 @@ public class ControlBoard {
     public double getHoodTuningAdjustment(){
         double val= -mOperator.getY(Hand.kRight);
         return (Math.abs(val) > Math.abs(.05)) ? val : 0.0;
+    }
+
+    public double getHoodOnTheFlyAdjustment(){
+        double val= -mOperator.getY(Hand.kLeft) * 2; //max or min of 4 degree adjustment
+        return (Math.abs(val) > Math.abs(.3)) ? val : 0.0; 
+
+    }
+
+    public boolean getChangeOnTheFlyAdjustment(){
+        return mOperator.getStickButton(Hand.kLeft);
     }
 
 
@@ -302,13 +312,21 @@ public class ControlBoard {
         return result;
     }
 
+    boolean lastReadingCycle = false;
+    public boolean getCycle(){
+        boolean currentReading = mDriver.getPOV()==270;
+        boolean result = buttonPressed(lastReadingCycle, currentReading);
+        lastReadingCycle = currentReading;
+        return result;
+    }
+
 
     private boolean buttonPressed(boolean lastReading, boolean currentReading){
         return lastReading==false && currentReading==true;
     }
 
     public boolean fillBalls(){
-        return mOperator.getStickButtonPressed(Hand.kLeft);
+        return mOperator.getYButtonPressed();
     }
 
     public boolean addCSVValue(){
